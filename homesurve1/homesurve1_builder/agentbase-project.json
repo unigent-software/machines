@@ -1,0 +1,256 @@
+{
+  "name" : "homesurve1_builder",
+  "active" : true,
+  "config" : {
+    "camera_frame_width" : "",
+    "camera_frame.width" : "416",
+    "action.trail.ttl.ms" : "30000",
+    "camera_frame.height" : "416"
+  },
+  "stateTopics" : [ {
+    "uri" : "detected_objects",
+    "description" : "",
+    "payloadType" : "com.unigent.agentbase.library.core.state.JsonPayload",
+    "maxSize" : 1
+  }, {
+    "uri" : "visual_focus",
+    "description" : "",
+    "payloadType" : "com.unigent.agentbase.library.core.state.JsonPayload",
+    "maxSize" : 1
+  }, {
+    "uri" : "rgb_image",
+    "description" : "",
+    "payloadType" : "com.unigent.agentbase.library.core.state.ImagePayload",
+    "maxSize" : 1
+  }, {
+    "uri" : "depth_image",
+    "description" : "",
+    "payloadType" : "com.unigent.agentbase.library.core.state.TensorPayload",
+    "maxSize" : 1
+  }, {
+    "uri" : "depth_image_(detected_objects)",
+    "description" : "",
+    "payloadType" : "com.unigent.agentbase.library.core.state.TensorPayload",
+    "maxSize" : 1
+  }, {
+    "uri" : "detected_objects_(depth_image)",
+    "description" : "",
+    "payloadType" : "com.unigent.agentbase.library.core.state.JsonPayload",
+    "maxSize" : 1
+  }, {
+    "uri" : "scene",
+    "description" : "",
+    "payloadType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
+    "maxSize" : 1
+  }, {
+    "uri" : "rgb_image_416",
+    "description" : "",
+    "payloadType" : "com.unigent.agentbase.library.core.state.ImagePayload",
+    "maxSize" : 1
+  } ],
+  "actionSpaces" : [ ],
+  "processors" : [ {
+    "name" : "object_detector",
+    "description" : "",
+    "logicTech" : "WebService",
+    "enabled" : true,
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "metadata" : {
+      "consumedData" : [ {
+        "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
+        "localName" : "camera_frame"
+      } ],
+      "producedData" : [ {
+        "dataType" : "com.unigent.agentbase.library.core.state.JsonPayload",
+        "localName" : "detected_objects"
+      } ],
+      "configDeclaration" : [ ],
+      "continuousActionDimensions" : [ ],
+      "discreteActions" : [ ]
+    },
+    "webServiceUrl" : "http://192.168.1.2:5050",
+    "inputs" : [ {
+      "topicName" : "rgb_image_416",
+      "localBinding" : "camera_frame"
+    } ],
+    "outputs" : [ {
+      "topicName" : "detected_objects",
+      "localBinding" : "detected_objects"
+    } ],
+    "config" : { }
+  }, {
+    "name" : "image_scaler",
+    "description" : "",
+    "logicTech" : "Java",
+    "enabled" : true,
+    "sourceJarPath" : {
+      "relative" : true,
+      "path" : "maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar"
+    },
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "metadata" : {
+      "consumedData" : [ {
+        "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
+        "localName" : "input_image"
+      } ],
+      "producedData" : [ {
+        "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
+        "localName" : "output_image"
+      } ],
+      "configDeclaration" : [ {
+        "name" : "targetWidth",
+        "required" : true
+      }, {
+        "name" : "targetHeight",
+        "required" : true
+      } ],
+      "continuousActionDimensions" : [ ],
+      "discreteActions" : [ ]
+    },
+    "javaClassName" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize",
+    "inputs" : [ {
+      "topicName" : "rgb_image",
+      "localBinding" : "input_image"
+    } ],
+    "outputs" : [ {
+      "topicName" : "rgb_image_416",
+      "localBinding" : "output_image"
+    } ],
+    "config" : {
+      "targetHeight" : "416",
+      "targetWidth" : "416"
+    }
+  }, {
+    "name" : "scene_builder",
+    "description" : "",
+    "logicTech" : "Java",
+    "enabled" : true,
+    "sourceJarPath" : {
+      "relative" : true,
+      "path" : "maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar"
+    },
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "metadata" : {
+      "consumedData" : [ {
+        "dataType" : "com.unigent.agentbase.library.core.state.JsonPayload",
+        "localName" : "detectedObjectsJson"
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
+        "localName" : "image"
+      } ],
+      "producedData" : [ {
+        "dataType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
+        "localName" : "scene"
+      } ],
+      "configDeclaration" : [ ],
+      "continuousActionDimensions" : [ ],
+      "discreteActions" : [ ]
+    },
+    "javaClassName" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder",
+    "inputs" : [ {
+      "topicName" : "detected_objects_(depth_image)",
+      "localBinding" : "detectedObjectsJson"
+    }, {
+      "topicName" : "depth_image_(detected_objects)",
+      "localBinding" : "image"
+    } ],
+    "outputs" : [ {
+      "topicName" : "scene",
+      "localBinding" : "scene"
+    } ],
+    "config" : { }
+  }, {
+    "name" : "rgbd_splitter",
+    "description" : "",
+    "logicTech" : "Java",
+    "enabled" : true,
+    "sourceJarPath" : {
+      "relative" : true,
+      "path" : "maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar"
+    },
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "metadata" : {
+      "consumedData" : [ {
+        "dataType" : "com.unigent.agentbase.library.core.state.sensor.CameraFrame",
+        "localName" : "rgbd_frame"
+      } ],
+      "producedData" : [ {
+        "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
+        "localName" : "rgb_frame"
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.TensorPayload",
+        "localName" : "depth_frame"
+      } ],
+      "configDeclaration" : [ ],
+      "continuousActionDimensions" : [ ],
+      "discreteActions" : [ ]
+    },
+    "javaClassName" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter",
+    "inputs" : [ {
+      "topicName" : "sensor/vision/realsense_camera",
+      "localBinding" : "rgbd_frame"
+    } ],
+    "outputs" : [ {
+      "topicName" : "rgb_image",
+      "localBinding" : "rgb_frame"
+    }, {
+      "topicName" : "depth_image",
+      "localBinding" : "depth_frame"
+    } ],
+    "config" : { }
+  } ],
+  "stateSynchronizers" : [ {
+    "name" : "detected_objects_|_depth_image",
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "timeout" : 2000,
+    "inputOutputMap" : [ {
+      "value1" : "detected_objects",
+      "value2" : "detected_objects_(depth_image)"
+    }, {
+      "value1" : "depth_image",
+      "value2" : "depth_image_(detected_objects)"
+    } ]
+  } ],
+  "nodes" : [ {
+    "id" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "master" : true,
+    "name" : "desktop",
+    "address" : "192.168.1.2",
+    "config" : {
+      "init_on_start" : "true"
+    },
+    "controllers" : [ {
+      "id" : "986271a2-6020-4ad0-8874-8142f02dcb10",
+      "uri" : "local_hardware",
+      "description" : "",
+      "connectionType" : "Local",
+      "address" : "ttyACM0",
+      "controllerDefinitionUri" : "unigent:agentbase:core:hardware:pc",
+      "boardTypeUri" : "onboard",
+      "actuators" : [ ],
+      "sensors" : [ {
+        "uri" : "realsense_camera",
+        "typeUri" : "real_sense_sr300",
+        "description" : "",
+        "pollingIntervalMillis" : 100,
+        "readingHistorySize" : 1,
+        "config" : { }
+      } ],
+      "config" : { }
+    } ]
+  } ],
+  "libraryItems" : [ {
+    "artifact" : {
+      "groupId" : "com.unigent.agentbase.library",
+      "artifactId" : "agentbase-core-library",
+      "version" : "0.2.0-SNAPSHOT"
+    }
+  }, {
+    "artifact" : {
+      "groupId" : "com.unigent.machines",
+      "artifactId" : "homesurve1",
+      "version" : "0.1-SNAPSHOT"
+    }
+  } ],
+  "mavenRepositories" : [ ]
+}

@@ -1,0 +1,9 @@
+*.iml
+*.ipr
+*.iws
+.idea
+target
+venv
+homesurve1/homesurve1_builder/maven
+homesurve1/homesurve1_builder/build
+
