@@ -1,9 +1,11 @@
 package com.unigent.machines.homesurve1.state;
 
+import com.unigent.agentbase.sdk.commons.RepresentableAsText;
 import com.unigent.agentbase.sdk.serialization.JsonSerializerBase;
 import com.unigent.agentbase.sdk.state.StatePayload;
 import com.unigent.agentbase.sdk.state.metadata.AgentBaseState;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,7 +14,7 @@ import java.util.List;
  * <a href="http://unigent.com">Unigent</a>
  **/
 @AgentBaseState(serializerType = ObjectScenePayload.ObjectScenePayloadSerializer.class)
-public class ObjectScenePayload implements StatePayload {
+public class ObjectScenePayload implements StatePayload, RepresentableAsText {
 
     private List<SceneObject> objects;
 
@@ -32,5 +34,12 @@ public class ObjectScenePayload implements StatePayload {
         public Class<ObjectScenePayload> getTargetType() {
             return ObjectScenePayload.class;
         }
+    }
+
+    @Override
+    public List<String> getTextRepresentation() {
+        List<String> result = new ArrayList<>();
+        objects.forEach(o->result.add(o.toString()));
+        return result;
     }
 }

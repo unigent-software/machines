@@ -47,6 +47,11 @@
     "description" : "",
     "payloadType" : "com.unigent.agentbase.library.core.state.ImagePayload",
     "maxSize" : 1
+  }, {
+    "uri" : "simulated_orientation",
+    "description" : "",
+    "payloadType" : "com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading",
+    "maxSize" : 1
   } ],
   "actionSpaces" : [ ],
   "processors" : [ {
@@ -66,7 +71,8 @@
       } ],
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
-      "discreteActions" : [ ]
+      "discreteActions" : [ ],
+      "description" : "YOLO v3 to detect objects by 416x416 image"
     },
     "webServiceUrl" : "http://192.168.1.2:5050",
     "inputs" : [ {
@@ -133,32 +139,44 @@
     "metadata" : {
       "consumedData" : [ {
         "dataType" : "com.unigent.agentbase.library.core.state.JsonPayload",
-        "localName" : "detectedObjectsJson"
+        "localName" : "detected_objects_json"
       }, {
-        "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
-        "localName" : "image"
+        "dataType" : "com.unigent.agentbase.library.core.state.TensorPayload",
+        "localName" : "depth_image"
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading",
+        "localName" : "orientation"
       } ],
       "producedData" : [ {
         "dataType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
         "localName" : "scene"
       } ],
-      "configDeclaration" : [ ],
+      "configDeclaration" : [ {
+        "name" : "camera.fov.horizontal",
+        "required" : true
+      } ],
       "continuousActionDimensions" : [ ],
-      "discreteActions" : [ ]
+      "discreteActions" : [ ],
+      "description" : ""
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder",
     "inputs" : [ {
       "topicName" : "detected_objects_(depth_image)",
-      "localBinding" : "detectedObjectsJson"
+      "localBinding" : "detected_objects_json"
     }, {
       "topicName" : "depth_image_(detected_objects)",
-      "localBinding" : "image"
+      "localBinding" : "depth_image"
+    }, {
+      "topicName" : "simulated_orientation",
+      "localBinding" : "orientation"
     } ],
     "outputs" : [ {
       "topicName" : "scene",
       "localBinding" : "scene"
     } ],
-    "config" : { }
+    "config" : {
+      "camera.fov.horizontal" : "86"
+    }
   }, {
     "name" : "rgbd_splitter",
     "description" : "",
@@ -196,6 +214,33 @@
     }, {
       "topicName" : "depth_image",
       "localBinding" : "depth_frame"
+    } ],
+    "config" : { }
+  }, {
+    "name" : "orientation_simulator",
+    "description" : "",
+    "logicTech" : "Java",
+    "enabled" : true,
+    "sourceJarPath" : {
+      "relative" : true,
+      "path" : "maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar"
+    },
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "metadata" : {
+      "consumedData" : [ ],
+      "producedData" : [ {
+        "dataType" : "com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading",
+        "localName" : "orientation"
+      } ],
+      "configDeclaration" : [ ],
+      "continuousActionDimensions" : [ ],
+      "discreteActions" : [ ]
+    },
+    "javaClassName" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator",
+    "inputs" : [ ],
+    "outputs" : [ {
+      "topicName" : "simulated_orientation",
+      "localBinding" : "orientation"
     } ],
     "config" : { }
   } ],
