@@ -14,6 +14,7 @@ import com.unigent.agentbase.sdk.processing.metadata.ConsumedDataFlow;
 import com.unigent.agentbase.sdk.processing.metadata.ProcessorConfigProperty;
 import com.unigent.agentbase.sdk.processing.metadata.ProducedDataFlow;
 import com.unigent.machines.homesurve1.state.DetectedObjects;
+import com.unigent.machines.homesurve1.state.ObjectSceneDebugPayload;
 import com.unigent.machines.homesurve1.state.ObjectScenePayload;
 import com.unigent.machines.homesurve1.state.SceneObject;
 import org.apache.logging.log4j.LogManager;
@@ -43,9 +44,11 @@ import static java.lang.Math.min;
                 @ConsumedDataFlow(localName = "orientation", dataType = XYZOrientationReading.class)
         },
         producedData = {
-                @ProducedDataFlow(localName = "scene", dataType = ObjectScenePayload.class)
+                @ProducedDataFlow(localName = "scene", dataType = ObjectScenePayload.class),
+                @ProducedDataFlow(localName = "scene_debug", dataType = ObjectSceneDebugPayload.class)
         },
         config = {
+                @ProcessorConfigProperty(name = "debug", required = true),
                 @ProcessorConfigProperty(name = "camera.fov.horizontal", required = true)
         }
 )
@@ -57,13 +60,14 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
      * Object detector uses 416x416 images. Depth image comes as 640x480;
      */
 
-    private static final double fullWidth = 640.0;
-    private static final double fullHeight = 480.0;
+    public static final int fullWidth = 640;
+    public static final int fullHeight = 480;
 
     private static final double ratioX = fullWidth / 416.0;
     private static final double ratioY = fullHeight / 416.0;
 
     private double horizontalDegreesPerPixel;
+    private boolean debugMode;
 
     public ObjectSceneBuilder(String name) {
         super(name, FreshPayloadPolicy.Replace);
@@ -73,9 +77,10 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
     public void configure(Map<String, URI> outputBinding, Config config, ConsoleHandle console, NodeServices nodeServices) {
         super.configure(outputBinding, config, console, nodeServices);
         double cameraHorizontalFieldOfView = config.getInt("camera.fov.horizontal");
-        log.info("Configured with cameraHorizontalFieldOfView={}", cameraHorizontalFieldOfView);
 
         horizontalDegreesPerPixel = cameraHorizontalFieldOfView / fullWidth;
+        debugMode = config.getBoolean("debug", false);
+        log.info("Configured with cameraHorizontalFieldOfView={}, Debug:{}", cameraHorizontalFieldOfView, debugMode);
     }
 
     @Override
@@ -88,7 +93,7 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
         List<SceneObject> sceneObjects = new ArrayList<>(detectedObjects.getBoxes().size());
 
         double centerAzimuth = orientation.getAzimuth();
-        double leftEdgeAzimuth = addAzimuthDegrees(centerAzimuth, -(fullWidth / 2) * this.horizontalDegreesPerPixel);
+        double leftEdgeAzimuth = addAzimuthDegrees(centerAzimuth, -(fullWidth / 2.0) * this.horizontalDegreesPerPixel);
         double [][] depthData  = depthImageTensor.toMatrix();
 
         for(int i=0; i<detectedObjects.getBoxes().size(); i++) {
@@ -98,8 +103,8 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
 
             int boxX = max(0, box[0]);
             int boxY = max(0, box[1]);
-            int boxWidth = min((int)fullWidth - 1, box[2]);
-            int boxHeight = min((int)fullHeight - 1, box[3]);
+            int boxWidth = box[2];
+            int boxHeight = box[3];
 
             // Azimuth
             int centerX = boxX + boxWidth / 2;
@@ -107,20 +112,20 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
 
             // Distance
             Mean depthMean = new Mean();
-            for(int r=boxY; r<boxY + boxHeight; r++) {
-                for(int c=boxX; c<boxX + boxWidth; c++) {
-                    double pixelDepth = depthData[r][c];
-                    if(pixelDepth > 0 && pixelDepth < 65535) { // https://communities.intel.com/thread/121826
-                        depthMean.increment(pixelDepth / 10.0);
-                    }
+            for(int r=boxY; r<min(fullHeight - 1, boxY + boxHeight); r++) {
+                for(int c=boxX; c<min(fullWidth - 1, boxX + boxWidth); c++) {
+                    depthMean.increment(depthData[r][c]);
                 }
             }
             double depth = depthMean.getValue();
             sceneObjects.add(new SceneObject(classId, label, depth, objectAzimuth));
         }
 
-        ObjectScenePayload scene = new ObjectScenePayload(sceneObjects);
-        produceStateUpdate(scene, "scene");
+        produceStateUpdate(new ObjectScenePayload(sceneObjects), "scene");
+
+        if(debugMode) {
+            produceStateUpdate(new ObjectSceneDebugPayload(depthData, sceneObjects, detectedObjects.getBoxes()), "scene_debug");
+        }
     }
 
     /**

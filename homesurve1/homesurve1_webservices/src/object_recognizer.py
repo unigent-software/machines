@@ -14,6 +14,7 @@ outputlayers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
 app = Flask(__name__)
 
+config_debug = False
 
 def detect(img, correlationid):
     height, width, channels = img.shape
@@ -77,11 +78,28 @@ def get_metadata():
         "produced_data" : {
             "detected_objects": {
                 "payloadType" : "com.unigent.agentbase.library.core.state.JsonPayload"
+            },
+            "detected_objects_debug": {
+                "payloadType": "com.unigent.agentbase.library.core.state.ImagePayload"
             }
         },
         "config_data" : {
-        }
+            "debug" : True
+        },
+        "description" : "YOLO v3 to detect objects by 416x416 image"
     })
+
+
+@app.route("/configure", methods=['POST'])
+def configure():
+    r = request
+    cfg = r.json
+
+    global config_debug
+    config_debug = cfg["debug"] == "true"
+    print("recognizer# Configured! Debug=%s" % config_debug)
+
+    return "OK"
 
 
 @app.route("/on_state_update/<local_binding>/<origin>/<timestamp>/<correlationid>", methods=['POST'])

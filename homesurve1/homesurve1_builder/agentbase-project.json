@@ -52,6 +52,16 @@
     "description" : "",
     "payloadType" : "com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading",
     "maxSize" : 1
+  }, {
+    "uri" : "scene_debug",
+    "description" : "",
+    "payloadType" : "com.unigent.machines.homesurve1.state.ObjectSceneDebugPayload",
+    "maxSize" : 1
+  }, {
+    "uri" : "detected_objects_debug",
+    "description" : "",
+    "payloadType" : "com.unigent.agentbase.library.core.state.ImagePayload",
+    "maxSize" : 1
   } ],
   "actionSpaces" : [ ],
   "processors" : [ {
@@ -66,10 +76,16 @@
         "localName" : "camera_frame"
       } ],
       "producedData" : [ {
+        "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
+        "localName" : "detected_objects_debug"
+      }, {
         "dataType" : "com.unigent.agentbase.library.core.state.JsonPayload",
         "localName" : "detected_objects"
       } ],
-      "configDeclaration" : [ ],
+      "configDeclaration" : [ {
+        "name" : "debug",
+        "required" : true
+      } ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
       "description" : "YOLO v3 to detect objects by 416x416 image"
@@ -80,10 +96,15 @@
       "localBinding" : "camera_frame"
     } ],
     "outputs" : [ {
+      "topicName" : "detected_objects_debug",
+      "localBinding" : "detected_objects_debug"
+    }, {
       "topicName" : "detected_objects",
       "localBinding" : "detected_objects"
     } ],
-    "config" : { }
+    "config" : {
+      "debug" : "true"
+    }
   }, {
     "name" : "image_scaler",
     "description" : "",
@@ -111,7 +132,12 @@
         "required" : true
       } ],
       "continuousActionDimensions" : [ ],
-      "discreteActions" : [ ]
+      "discreteActions" : [ ],
+      "description" : "Scales provided image to the provided size",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize",
+      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
+      "displayName" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize"
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize",
     "inputs" : [ {
@@ -150,14 +176,24 @@
       "producedData" : [ {
         "dataType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
         "localName" : "scene"
+      }, {
+        "dataType" : "com.unigent.machines.homesurve1.state.ObjectSceneDebugPayload",
+        "localName" : "scene_debug"
       } ],
       "configDeclaration" : [ {
+        "name" : "debug",
+        "required" : true
+      }, {
         "name" : "camera.fov.horizontal",
         "required" : true
       } ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : ""
+      "description" : "",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder",
+      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
+      "displayName" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder"
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder",
     "inputs" : [ {
@@ -173,8 +209,12 @@
     "outputs" : [ {
       "topicName" : "scene",
       "localBinding" : "scene"
+    }, {
+      "topicName" : "scene_debug",
+      "localBinding" : "scene_debug"
     } ],
     "config" : {
+      "debug" : "true",
       "camera.fov.horizontal" : "86"
     }
   }, {
@@ -201,7 +241,12 @@
       } ],
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
-      "discreteActions" : [ ]
+      "discreteActions" : [ ],
+      "description" : "",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter",
+      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
+      "displayName" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter"
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter",
     "inputs" : [ {
@@ -234,7 +279,12 @@
       } ],
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
-      "discreteActions" : [ ]
+      "discreteActions" : [ ],
+      "description" : "",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator",
+      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
+      "displayName" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator"
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator",
     "inputs" : [ ],
