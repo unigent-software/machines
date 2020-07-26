@@ -76,11 +76,11 @@
         "localName" : "camera_frame"
       } ],
       "producedData" : [ {
-        "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
-        "localName" : "detected_objects_debug"
-      }, {
         "dataType" : "com.unigent.agentbase.library.core.state.JsonPayload",
         "localName" : "detected_objects"
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
+        "localName" : "detected_objects_debug"
       } ],
       "configDeclaration" : [ {
         "name" : "debug",
@@ -93,14 +93,17 @@
     "webServiceUrl" : "http://192.168.1.2:5050",
     "inputs" : [ {
       "topicName" : "rgb_image_416",
-      "localBinding" : "camera_frame"
+      "localBinding" : "camera_frame",
+      "serializationMode" : "binary"
     } ],
     "outputs" : [ {
-      "topicName" : "detected_objects_debug",
-      "localBinding" : "detected_objects_debug"
-    }, {
       "topicName" : "detected_objects",
-      "localBinding" : "detected_objects"
+      "localBinding" : "detected_objects",
+      "serializationMode" : "json"
+    }, {
+      "topicName" : "detected_objects_debug",
+      "localBinding" : "detected_objects_debug",
+      "serializationMode" : "binary"
     } ],
     "config" : {
       "debug" : "true"
@@ -133,20 +136,18 @@
       } ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "Scales provided image to the provided size",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
-      "displayName" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize"
+      "description" : "Scales provided image to the provided size"
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize",
     "inputs" : [ {
       "topicName" : "rgb_image",
-      "localBinding" : "input_image"
+      "localBinding" : "input_image",
+      "serializationMode" : "binary"
     } ],
     "outputs" : [ {
       "topicName" : "rgb_image_416",
-      "localBinding" : "output_image"
+      "localBinding" : "output_image",
+      "serializationMode" : "binary"
     } ],
     "config" : {
       "targetHeight" : "416",
@@ -189,29 +190,30 @@
       } ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
-      "displayName" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder"
+      "description" : ""
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder",
     "inputs" : [ {
       "topicName" : "detected_objects_(depth_image)",
-      "localBinding" : "detected_objects_json"
+      "localBinding" : "detected_objects_json",
+      "serializationMode" : "binary"
     }, {
       "topicName" : "depth_image_(detected_objects)",
-      "localBinding" : "depth_image"
+      "localBinding" : "depth_image",
+      "serializationMode" : "binary"
     }, {
       "topicName" : "simulated_orientation",
-      "localBinding" : "orientation"
+      "localBinding" : "orientation",
+      "serializationMode" : "binary"
     } ],
     "outputs" : [ {
       "topicName" : "scene",
-      "localBinding" : "scene"
+      "localBinding" : "scene",
+      "serializationMode" : "binary"
     }, {
       "topicName" : "scene_debug",
-      "localBinding" : "scene_debug"
+      "localBinding" : "scene_debug",
+      "serializationMode" : "binary"
     } ],
     "config" : {
       "debug" : "true",
@@ -242,23 +244,22 @@
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
-      "displayName" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter"
+      "description" : ""
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter",
     "inputs" : [ {
       "topicName" : "sensor/vision/realsense_camera",
-      "localBinding" : "rgbd_frame"
+      "localBinding" : "rgbd_frame",
+      "serializationMode" : "binary"
     } ],
     "outputs" : [ {
       "topicName" : "rgb_image",
-      "localBinding" : "rgb_frame"
+      "localBinding" : "rgb_frame",
+      "serializationMode" : "binary"
     }, {
       "topicName" : "depth_image",
-      "localBinding" : "depth_frame"
+      "localBinding" : "depth_frame",
+      "serializationMode" : "binary"
     } ],
     "config" : { }
   }, {
@@ -280,17 +281,14 @@
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
-      "displayName" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator"
+      "description" : ""
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator",
     "inputs" : [ ],
     "outputs" : [ {
       "topicName" : "simulated_orientation",
-      "localBinding" : "orientation"
+      "localBinding" : "orientation",
+      "serializationMode" : "binary"
     } ],
     "config" : { }
   } ],
