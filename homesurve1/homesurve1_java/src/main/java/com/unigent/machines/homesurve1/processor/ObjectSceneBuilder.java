@@ -5,6 +5,7 @@ import com.unigent.agentbase.library.core.state.TensorPayload;
 import com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading;
 import com.unigent.agentbase.sdk.commons.Config;
 import com.unigent.agentbase.sdk.commons.util.Mean;
+import com.unigent.agentbase.sdk.commons.util.Tensors;
 import com.unigent.agentbase.sdk.commons.util.geometry.Geometry;
 import com.unigent.agentbase.sdk.controller.ConsoleHandle;
 import com.unigent.agentbase.sdk.node.NodeServices;
@@ -60,11 +61,13 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
      * Object detector uses 416x416 images. Depth image comes as 640x480;
      */
 
+    public static final int size = 416;
+
     public static final int fullWidth = 640;
     public static final int fullHeight = 480;
 
-    private static final double ratioX = fullWidth / 416.0;
-    private static final double ratioY = fullHeight / 416.0;
+    public static final double ratio = fullHeight / (double) size;
+    public static final int halfWidth = (640 - 480) / 2;
 
     private double horizontalDegreesPerPixel;
     private boolean debugMode;
@@ -99,12 +102,12 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
         for(int i=0; i<detectedObjects.getBoxes().size(); i++) {
             String classId = detectedObjects.getClassIds().get(i);
             String label = detectedObjects.getLabels().get(i);
-            int [] box = adjustedBox(detectedObjects.getBoxes().get(i)); // x,y,w,h
+            List<Integer> box = detectedObjects.getBoxes().get(i); // x,y,w,h
 
-            int boxX = max(0, box[0]);
-            int boxY = max(0, box[1]);
-            int boxWidth = box[2];
-            int boxHeight = box[3];
+            int boxX = max(0, box.get(0));
+            int boxY = max(0, box.get(1));
+            int boxWidth = box.get(2);
+            int boxHeight = box.get(3);
 
             // Azimuth
             int centerX = boxX + boxWidth / 2;
@@ -112,8 +115,10 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
 
             // Distance
             Mean depthMean = new Mean();
-            for(int r=boxY; r<min(fullHeight - 1, boxY + boxHeight); r++) {
-                for(int c=boxX; c<min(fullWidth - 1, boxX + boxWidth); c++) {
+            int depthBoxStartY = Double.valueOf(boxY * ratio).intValue();
+            int depthBoxStartX = Double.valueOf(boxX * ratio + halfWidth).intValue(); // extract depth information from full size depth frame (crop and scale)
+            for(int r=depthBoxStartY ; r<min(size - 1, depthBoxStartY + boxHeight); r++) {
+                for(int c=depthBoxStartX; c<min(size - 1, depthBoxStartX + boxWidth); c++) {
                     depthMean.increment(depthData[r][c]);
                 }
             }
@@ -126,18 +131,5 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
         if(debugMode) {
             produceStateUpdate(new ObjectSceneDebugPayload(depthData, sceneObjects, detectedObjects.getBoxes()), "scene_debug");
         }
-    }
-
-    /**
-     *
-     * @param originalBox: [x, y, w, h]
-     */
-    static int [] adjustedBox(List<Integer> originalBox) {
-        return new int [] {
-                Double.valueOf(originalBox.get(0) * ratioX).intValue(),
-                Double.valueOf(originalBox.get(1) * ratioY).intValue(),
-                Double.valueOf(originalBox.get(2) * ratioX).intValue(),
-                Double.valueOf(originalBox.get(3) * ratioY).intValue()
-        };
     }
 }

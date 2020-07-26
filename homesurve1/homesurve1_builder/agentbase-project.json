@@ -136,7 +136,11 @@
       } ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "Scales provided image to the provided size"
+      "description" : "Scales provided image to the provided size",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize",
+      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
+      "displayName" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize"
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize",
     "inputs" : [ {
@@ -190,7 +194,11 @@
       } ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : ""
+      "description" : "",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder",
+      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
+      "displayName" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder"
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder",
     "inputs" : [ {
@@ -244,7 +252,11 @@
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : ""
+      "description" : "",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter",
+      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
+      "displayName" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter"
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter",
     "inputs" : [ {
@@ -281,7 +293,11 @@
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : ""
+      "description" : "",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator",
+      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
+      "displayName" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator"
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator",
     "inputs" : [ ],

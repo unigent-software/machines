@@ -1,6 +1,7 @@
 package com.unigent.machines.homesurve1.state;
 
 import com.unigent.agentbase.sdk.commons.RepresentableAsImage;
+import com.unigent.agentbase.sdk.commons.util.Images;
 import com.unigent.agentbase.sdk.serialization.JsonSerializerBase;
 import com.unigent.agentbase.sdk.state.StatePayload;
 import com.unigent.agentbase.sdk.state.metadata.AgentBaseState;
@@ -31,19 +32,22 @@ public class ObjectSceneDebugPayload implements StatePayload, RepresentableAsIma
 
     @Override
     public List<BufferedImage> getImageRepresentation() {
-        BufferedImage image = new BufferedImage(ObjectSceneBuilder.fullWidth, ObjectSceneBuilder.fullHeight, BufferedImage.TYPE_INT_RGB);
-
-        // Depth
-        for(int r=0; r < ObjectSceneBuilder.fullHeight; r++) {
-            for(int c=0; c < ObjectSceneBuilder.fullWidth; c++) {
-                image.setRGB(c, r, Color.getHSBColor((float) (depthData[r][c] / 5.0), 0.8f, 0.8f).getRGB());
+        // Depth (cropped to 480 x 480)
+        int depthImageSize = ObjectSceneBuilder.fullHeight;
+        BufferedImage depthImage = new BufferedImage(depthImageSize, depthImageSize, BufferedImage.TYPE_INT_RGB);
+        for(int r = 0; r < depthImageSize; r++) {
+            for(int c = 0; c < depthImageSize; c++) {
+                depthImage.setRGB(c, r, Color.getHSBColor((float) (depthData[r][c + ObjectSceneBuilder.halfWidth] / 5.0), 0.8f, 0.8f).getRGB());
             }
         }
+
+        // Scale image to 416 x 416
+        BufferedImage depthImage416 = Images.resize(depthImage, ObjectSceneBuilder.size, ObjectSceneBuilder.size);
 
         // Boxes
         for(int i=0; i<sceneObjects.size(); i++) {
             if(sceneObjects.get(i).getLabel().equalsIgnoreCase("cup")) {
-                Graphics2D g = (Graphics2D) image.getGraphics();
+                Graphics2D g = (Graphics2D) depthImage416.getGraphics();
                 g.setColor(Color.WHITE);
 
                 SceneObject so = sceneObjects.get(i);
@@ -63,7 +67,7 @@ public class ObjectSceneDebugPayload implements StatePayload, RepresentableAsIma
 //        boxes.forEach(box->g.drawRect(box.get(0), box.get(1), box.get(2), box.get(3)));
 //        g.dispose();
 
-        return Collections.singletonList(image);
+        return Collections.singletonList(depthImage416);
     }
 
     public class ObjectSceneDebugPayloadSerializer extends JsonSerializerBase<ObjectSceneDebugPayload> {
