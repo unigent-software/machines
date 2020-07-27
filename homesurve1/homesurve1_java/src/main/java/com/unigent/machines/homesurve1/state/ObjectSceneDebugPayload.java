@@ -45,27 +45,20 @@ public class ObjectSceneDebugPayload implements StatePayload, RepresentableAsIma
         BufferedImage depthImage416 = Images.resize(depthImage, ObjectSceneBuilder.size, ObjectSceneBuilder.size);
 
         // Boxes
+        Graphics2D g = (Graphics2D) depthImage416.getGraphics();
+        g.setColor(Color.WHITE);
         for(int i=0; i<sceneObjects.size(); i++) {
-            if(sceneObjects.get(i).getLabel().equalsIgnoreCase("cup")) {
-                Graphics2D g = (Graphics2D) depthImage416.getGraphics();
-                g.setColor(Color.WHITE);
 
-                SceneObject so = sceneObjects.get(i);
-                int x = boxes.get(i).get(0);
-                int y = boxes.get(i).get(1);
-                int w = boxes.get(i).get(2);
-                int h = boxes.get(i).get(3);
+            SceneObject so = sceneObjects.get(i);
+            int x = boxes.get(i).get(0);
+            int y = boxes.get(i).get(1);
+            int w = boxes.get(i).get(2);
+            int h = boxes.get(i).get(3);
 
-                g.drawRect(x, y, w, h);
-                g.drawString(so.getLabel(), x + w/2, y + h/2);
-                g.dispose();
-            }
+            g.drawRect(x, y, w, h);
+            g.drawString(so.getLabel(), x + w/2, y + h/2);
         }
-
-//        Graphics2D g = (Graphics2D) image.getGraphics();
-//        g.setColor(Color.WHITE);
-//        boxes.forEach(box->g.drawRect(box.get(0), box.get(1), box.get(2), box.get(3)));
-//        g.dispose();
+        g.dispose();
 
         return Collections.singletonList(depthImage416);
     }
