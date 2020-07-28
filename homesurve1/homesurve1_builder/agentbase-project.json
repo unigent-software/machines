@@ -62,6 +62,11 @@
     "description" : "",
     "payloadType" : "com.unigent.agentbase.library.core.state.ImagePayload",
     "maxSize" : 1
+  }, {
+    "uri" : "filtered_scene",
+    "description" : "",
+    "payloadType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
+    "maxSize" : 1
   } ],
   "actionSpaces" : [ ],
   "processors" : [ {
@@ -136,11 +141,7 @@
       } ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "Scales provided image to the provided size",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
-      "displayName" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize"
+      "description" : "Scales provided image to the provided size"
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize",
     "inputs" : [ {
@@ -194,11 +195,7 @@
       } ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
-      "displayName" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder"
+      "description" : ""
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder",
     "inputs" : [ {
@@ -252,11 +249,7 @@
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
-      "displayName" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter"
+      "description" : ""
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter",
     "inputs" : [ {
@@ -293,17 +286,49 @@
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
-      "displayName" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator"
+      "description" : ""
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator",
     "inputs" : [ ],
     "outputs" : [ {
       "topicName" : "simulated_orientation",
       "localBinding" : "orientation",
+      "serializationMode" : "binary"
+    } ],
+    "config" : { }
+  }, {
+    "name" : "scene_filter",
+    "description" : "",
+    "logicTech" : "Java",
+    "enabled" : true,
+    "sourceJarPath" : {
+      "relative" : true,
+      "path" : "maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar"
+    },
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "metadata" : {
+      "consumedData" : [ {
+        "dataType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
+        "localName" : "scene_input"
+      } ],
+      "producedData" : [ {
+        "dataType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
+        "localName" : "scene_output"
+      } ],
+      "configDeclaration" : [ ],
+      "continuousActionDimensions" : [ ],
+      "discreteActions" : [ ],
+      "description" : ""
+    },
+    "javaClassName" : "com.unigent.machines.homesurve1.processor.ObjectSceneFilter",
+    "inputs" : [ {
+      "topicName" : "scene",
+      "localBinding" : "scene_input",
+      "serializationMode" : "binary"
+    } ],
+    "outputs" : [ {
+      "topicName" : "filtered_scene",
+      "localBinding" : "scene_output",
       "serializationMode" : "binary"
     } ],
     "config" : { }
