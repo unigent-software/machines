@@ -117,8 +117,8 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
             Mean depthMean = new Mean();
             int depthBoxStartY = Double.valueOf(boxY * ratio).intValue();
             int depthBoxStartX = Double.valueOf(boxX * ratio + halfWidth).intValue(); // extract depth information from full size depth frame (crop and scale)
-            for(int r=depthBoxStartY ; r<min(size - 1, depthBoxStartY + boxHeight); r++) {
-                for(int c=depthBoxStartX; c<min(size - 1, depthBoxStartX + boxWidth); c++) {
+            for(int r=depthBoxStartY ; r<min(fullHeight - 1, depthBoxStartY + boxHeight); r++) {
+                for(int c=depthBoxStartX; c<min(fullWidth - 1, depthBoxStartX + boxWidth); c++) {
                     depthMean.increment(depthData[r][c]);
                 }
             }

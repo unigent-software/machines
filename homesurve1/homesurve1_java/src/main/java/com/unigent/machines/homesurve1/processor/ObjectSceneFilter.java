@@ -125,7 +125,6 @@ public class ObjectSceneFilter extends ProcessorBase {
 
             // Cleanup
             Set<Measurement> toRemove = new HashSet<>();
-            boolean sufficientTimeBucket = false;
             for(Measurement m : this.history) {
                 if(now - m.timestamp > OBJECT_DECAY_MILLIS) {
                     toRemove.add(m);
@@ -145,6 +144,14 @@ public class ObjectSceneFilter extends ProcessorBase {
             }
 
             return change;
+        }
+
+        public double getCurrentOrLastDistance() {
+            return mature ? distance.value : history.getLast().distance;
+        }
+
+        public double getCurrentOrLastAzimuth() {
+            return mature ? azimuth.value : history.getLast().azimuth;
         }
 
         public boolean isMature() {
@@ -223,8 +230,8 @@ public class ObjectSceneFilter extends ProcessorBase {
         return this.trackedObjects.stream()
                 .filter(to->
                         to.classId.equals(object.getClassId()) &&
-                        Maths.shortestDeltaDegrees(to.azimuth.value, object.getAzimuthDegrees()) < AZIMUTH_TOLERANCE_DEGREES &&
-                        Math.abs(to.distance.value - object.getDistanceMeters()) < DISTANCE_TOLERANCE_METERS
+                        Maths.shortestDeltaDegrees(to.getCurrentOrLastAzimuth(), object.getAzimuthDegrees()) < AZIMUTH_TOLERANCE_DEGREES &&
+                        Math.abs(to.getCurrentOrLastDistance() - object.getDistanceMeters()) < DISTANCE_TOLERANCE_METERS
                 )
                 .findFirst()
                 .orElse(null);
