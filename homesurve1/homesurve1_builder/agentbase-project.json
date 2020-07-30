@@ -67,6 +67,11 @@
     "description" : "",
     "payloadType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
     "maxSize" : 1
+  }, {
+    "uri" : "linear_motion",
+    "description" : "Linear motion based on depth image information",
+    "payloadType" : "com.unigent.agentbase.library.core.state.TensorPayload",
+    "maxSize" : 1
   } ],
   "actionSpaces" : [ ],
   "processors" : [ {
@@ -349,6 +354,46 @@
     "outputs" : [ {
       "topicName" : "filtered_scene",
       "localBinding" : "scene_output",
+      "serializationMode" : "binary"
+    } ],
+    "config" : { }
+  }, {
+    "name" : "linear_motion_detector",
+    "description" : "",
+    "logicTech" : "Java",
+    "enabled" : true,
+    "sourceJarPath" : {
+      "relative" : true,
+      "path" : "maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar"
+    },
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "metadata" : {
+      "consumedData" : [ {
+        "dataType" : "com.unigent.agentbase.library.core.state.TensorPayload",
+        "localName" : "depth_image"
+      } ],
+      "producedData" : [ {
+        "dataType" : "com.unigent.agentbase.library.core.state.TensorPayload",
+        "localName" : "linear_motion"
+      } ],
+      "configDeclaration" : [ ],
+      "continuousActionDimensions" : [ ],
+      "discreteActions" : [ ],
+      "description" : "Produces linear motion (travel and velocity) value (+/-) in meters",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.machines.homesurve1.processor.LinearMotionDetector",
+      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
+      "displayName" : "com.unigent.machines.homesurve1.processor.LinearMotionDetector"
+    },
+    "javaClassName" : "com.unigent.machines.homesurve1.processor.LinearMotionDetector",
+    "inputs" : [ {
+      "topicName" : "depth_image",
+      "localBinding" : "depth_image",
+      "serializationMode" : "binary"
+    } ],
+    "outputs" : [ {
+      "topicName" : "linear_motion",
+      "localBinding" : "linear_motion",
       "serializationMode" : "binary"
     } ],
     "config" : { }
