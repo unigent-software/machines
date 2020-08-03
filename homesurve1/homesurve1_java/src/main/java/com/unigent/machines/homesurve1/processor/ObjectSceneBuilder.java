@@ -100,7 +100,7 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
         double [][] depthData  = depthImageTensor.toMatrix();
 
         for(int i=0; i<detectedObjects.getBoxes().size(); i++) {
-            String classId = detectedObjects.getClassIds().get(i);
+            int classId = detectedObjects.getClassIds().get(i);
             String label = detectedObjects.getLabels().get(i);
             List<Integer> box = detectedObjects.getBoxes().get(i); // x,y,w,h
 
@@ -126,7 +126,7 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
             sceneObjects.add(new SceneObject(classId, label, depth, objectAzimuth));
         }
 
-        produceStateUpdate(new ObjectScenePayload(sceneObjects), "scene");
+        produceStateUpdate(new ObjectScenePayload(sceneObjects, detectedObjects.getSourceImageTimestamp()), "scene");
 
         if(debugMode) {
             produceStateUpdate(new ObjectSceneDebugPayload(depthData, sceneObjects, detectedObjects.getBoxes()), "scene_debug");

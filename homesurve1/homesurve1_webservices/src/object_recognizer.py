@@ -19,7 +19,7 @@ app = Flask(__name__)
 config_debug = False
 
 
-def detect(img):
+def detect(img, timestamp):
     height, width, channels = img.shape
 
     blob = cv.dnn.blobFromImage(img, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
@@ -54,6 +54,7 @@ def detect(img):
                 class_ids.append(int(class_id))  # name of the object tha was detected
                 labels.append(str(classes[int(class_id)]))
     return {
+        "sourceImageTimestamp" : timestamp,
         "classIds" : class_ids,
         "labels" : labels,
         "confidences" : confidences,
@@ -108,7 +109,7 @@ def on_situation(local_binding, origin, timestamp, correlation_id):
         if img is None:
             raise Exception("Unable to decode provided image")
 
-        detection_result = detect(img)
+        detection_result = detect(img, timestamp)
         print(detection_result)
 
         produced_data = [{

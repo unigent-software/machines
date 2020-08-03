@@ -73,23 +73,24 @@ public class ObjectSceneFilter extends ProcessorBase {
         }
 
         if(change) {
-            produceStateUpdate(createScene(), "scene_output");
+            produceStateUpdate(createScene(incomingScene.getSourceImageTimestamp()), "scene_output");
         }
-
     }
 
-    private ObjectScenePayload createScene() {
-        return new ObjectScenePayload(this.trackedObjects.stream()
-                .filter(TrackedObject::isMature)
-                .map(TrackedObject::toSceneObject)
-                .collect(Collectors.toList())
+    private ObjectScenePayload createScene(long timestamp) {
+        return new ObjectScenePayload(
+                this.trackedObjects.stream()
+                    .filter(TrackedObject::isMature)
+                    .map(TrackedObject::toSceneObject)
+                    .collect(Collectors.toList()),
+                timestamp
         );
     }
 
     private static class TrackedObject {
 
         long lastSawAtMillis;
-        final String classId;
+        final int classId;
         final String label;
 
         boolean mature;
@@ -229,7 +230,7 @@ public class ObjectSceneFilter extends ProcessorBase {
     private TrackedObject findTrackedObject(SceneObject object) {
         return this.trackedObjects.stream()
                 .filter(to->
-                        to.classId.equals(object.getClassId()) &&
+                        to.classId == object.getClassId() &&
                         Maths.shortestDeltaDegrees(to.getCurrentOrLastAzimuth(), object.getAzimuthDegrees()) < AZIMUTH_TOLERANCE_DEGREES &&
                         Math.abs(to.getCurrentOrLastDistance() - object.getDistanceMeters()) < DISTANCE_TOLERANCE_METERS
                 )

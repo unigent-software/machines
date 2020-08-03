@@ -9,16 +9,25 @@ import java.util.List;
  **/
 public class DetectedObjects {
 
-    private List<String> classIds;
+    private long sourceImageTimestamp;
+    private List<Integer> classIds;
     private List<String> labels;
     private List<Double> confidences;
     private List<List<Integer>> boxes;
 
-    public List<String> getClassIds() {
+    public long getSourceImageTimestamp() {
+        return sourceImageTimestamp;
+    }
+
+    public void setSourceImageTimestamp(long sourceImageTimestamp) {
+        this.sourceImageTimestamp = sourceImageTimestamp;
+    }
+
+    public List<Integer> getClassIds() {
         return classIds;
     }
 
-    public void setClassIds(List<String> classIds) {
+    public void setClassIds(List<Integer> classIds) {
         this.classIds = classIds;
     }
 

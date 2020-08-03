@@ -51,7 +51,8 @@
     "uri" : "simulated_orientation",
     "description" : "",
     "payloadType" : "com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading",
-    "maxSize" : 1
+    "maxSize" : 2000,
+    "maxAgeMillis" : 2000
   }, {
     "uri" : "scene_debug",
     "description" : "",
@@ -71,7 +72,8 @@
     "uri" : "linear_motion",
     "description" : "Linear motion based on depth image information",
     "payloadType" : "com.unigent.agentbase.library.core.state.TensorPayload",
-    "maxSize" : 1
+    "maxSize" : 500,
+    "maxAgeMillis" : 2000
   } ],
   "actionSpaces" : [ ],
   "processors" : [ {
@@ -86,11 +88,11 @@
         "localName" : "camera_frame"
       } ],
       "producedData" : [ {
-        "dataType" : "com.unigent.agentbase.library.core.state.JsonPayload",
-        "localName" : "detected_objects"
-      }, {
         "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
         "localName" : "detected_objects_debug"
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.JsonPayload",
+        "localName" : "detected_objects"
       } ],
       "configDeclaration" : [ {
         "name" : "debug",
@@ -396,6 +398,53 @@
       "localBinding" : "linear_motion",
       "serializationMode" : "binary"
     } ],
+    "config" : { }
+  }, {
+    "name" : "dynamics_collector",
+    "description" : "",
+    "logicTech" : "Java",
+    "enabled" : true,
+    "sourceJarPath" : {
+      "relative" : true,
+      "path" : "maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar"
+    },
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "metadata" : {
+      "consumedData" : [ {
+        "dataType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
+        "localName" : "scene"
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.TensorPayload",
+        "localName" : "linear_motion"
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading",
+        "localName" : "simulated_orientation"
+      } ],
+      "producedData" : [ ],
+      "configDeclaration" : [ ],
+      "continuousActionDimensions" : [ ],
+      "discreteActions" : [ ],
+      "description" : "",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector",
+      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
+      "displayName" : "com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector"
+    },
+    "javaClassName" : "com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector",
+    "inputs" : [ {
+      "topicName" : "filtered_scene",
+      "localBinding" : "scene",
+      "serializationMode" : "binary"
+    }, {
+      "topicName" : "linear_motion",
+      "localBinding" : "linear_motion",
+      "serializationMode" : "binary"
+    }, {
+      "topicName" : "simulated_orientation",
+      "localBinding" : "simulated_orientation",
+      "serializationMode" : "binary"
+    } ],
+    "outputs" : [ ],
     "config" : { }
   } ],
   "stateSynchronizers" : [ {

@@ -25,7 +25,7 @@ import static java.lang.Math.abs;
  **/
 @AgentBaseProcessor(
     consumedData = @ConsumedDataFlow(dataType = TensorPayload.class, localName = "depth_image", description = "640x480 depth image"),
-    producedData = @ProducedDataFlow(dataType = TensorPayload.class, localName = "linear_motion", description = "[[path along X][velocity along X]]"),
+    producedData = @ProducedDataFlow(dataType = TensorPayload.class, localName = "linear_motion", description = "[path along X,velocity along X, delta time]"),
     description = "Produces linear motion (travel and velocity) value (+/-) in meters"
 )
 public class LinearMotionDetector extends ProcessorBase {
@@ -71,12 +71,7 @@ public class LinearMotionDetector extends ProcessorBase {
         double velocityMetersSec = deltaDepth / deltaTime;
 
         produceStateUpdate(
-                new TensorPayload(
-                        new double[][]{
-                                new double[]{deltaDepth},
-                                new double[]{velocityMetersSec},
-                        }
-                ),
+                new TensorPayload(new double[]{deltaDepth, velocityMetersSec, deltaTime}),
                 "linear_motion"
         );
 

@@ -16,14 +16,20 @@ import java.util.List;
 @AgentBaseState(serializerType = ObjectScenePayload.ObjectScenePayloadSerializer.class)
 public class ObjectScenePayload implements StatePayload, RepresentableAsText {
 
+    private long sourceImageTimestamp;
     private List<SceneObject> objects;
 
-    public ObjectScenePayload(List<SceneObject> objects) {
+    public ObjectScenePayload(List<SceneObject> objects, long sourceImageTimestamp) {
         this.objects = objects;
+        this.sourceImageTimestamp = sourceImageTimestamp;
     }
 
     public List<SceneObject> getObjects() {
         return objects;
+    }
+
+    public long getSourceImageTimestamp() {
+        return sourceImageTimestamp;
     }
 
     public void setObjects(List<SceneObject> objects) {
@@ -39,6 +45,7 @@ public class ObjectScenePayload implements StatePayload, RepresentableAsText {
     @Override
     public List<String> getTextRepresentation() {
         List<String> result = new ArrayList<>();
+        result.add("Timestamp: " + sourceImageTimestamp);
         objects.forEach(o->result.add(o.toString()));
         return result;
     }

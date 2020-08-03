@@ -7,7 +7,7 @@ package com.unigent.machines.homesurve1.state;
  **/
 public class SceneObject {
 
-    private String classId;
+    private int classId;
     private String label;
     private double distanceMeters;
     private double azimuthDegrees;
@@ -16,18 +16,18 @@ public class SceneObject {
 
     }
 
-    public SceneObject(String classId, String label, double distanceMeters, double azimuthDegrees) {
+    public SceneObject(int classId, String label, double distanceMeters, double azimuthDegrees) {
         this.classId = classId;
         this.label = label;
         this.distanceMeters = distanceMeters;
         this.azimuthDegrees = azimuthDegrees;
     }
 
-    public String getClassId() {
+    public int getClassId() {
         return classId;
     }
 
-    public void setClassId(String classId) {
+    public void setClassId(int classId) {
         this.classId = classId;
     }
 
