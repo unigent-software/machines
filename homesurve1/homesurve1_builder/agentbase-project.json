@@ -52,7 +52,7 @@
     "description" : "",
     "payloadType" : "com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading",
     "maxSize" : 2000,
-    "maxAgeMillis" : 2000
+    "maxAgeMillis" : 10000
   }, {
     "uri" : "scene_debug",
     "description" : "",
@@ -73,7 +73,7 @@
     "description" : "Linear motion based on depth image information",
     "payloadType" : "com.unigent.agentbase.library.core.state.TensorPayload",
     "maxSize" : 500,
-    "maxAgeMillis" : 2000
+    "maxAgeMillis" : 10000
   } ],
   "actionSpaces" : [ ],
   "processors" : [ {
@@ -302,7 +302,10 @@
         "dataType" : "com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading",
         "localName" : "orientation"
       } ],
-      "configDeclaration" : [ ],
+      "configDeclaration" : [ {
+        "name" : "intervalMillis",
+        "required" : true
+      } ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
       "description" : "",
@@ -318,7 +321,9 @@
       "localBinding" : "orientation",
       "serializationMode" : "binary"
     } ],
-    "config" : { }
+    "config" : {
+      "intervalMillis" : "80"
+    }
   }, {
     "name" : "scene_filter",
     "description" : "",

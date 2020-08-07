@@ -1,9 +1,6 @@
 package com.unigent.machines.homesurve1.processor.dynamics;
 
-import com.unigent.agentbase.library.core.state.DoublePayload;
-
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Home Surveillance Robot, POC 1
@@ -12,9 +9,17 @@ import java.util.stream.Collectors;
  **/
 public class MapState {
 
-    private final List<MapObject> objects;
+    private List<MapObject> objects;
 
     public MapState(List<MapObject> objects) {
+        this.objects = objects;
+    }
+
+    public List<MapObject> getObjects() {
+        return objects;
+    }
+
+    public void setObjects(List<MapObject> objects) {
         this.objects = objects;
     }
 
@@ -35,6 +40,30 @@ public class MapState {
             this.classId = classId;
             this.azimuth = azimuth;
             this.distance = distance;
+        }
+
+        public void setClassId(int classId) {
+            this.classId = classId;
+        }
+
+        public void setAzimuth(double azimuth) {
+            this.azimuth = azimuth;
+        }
+
+        public void setDistance(double distance) {
+            this.distance = distance;
+        }
+
+        public int getClassId() {
+            return classId;
+        }
+
+        public double getAzimuth() {
+            return azimuth;
+        }
+
+        public double getDistance() {
+            return distance;
         }
 
         @Override

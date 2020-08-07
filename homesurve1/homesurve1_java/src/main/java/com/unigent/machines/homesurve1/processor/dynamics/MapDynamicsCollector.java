@@ -3,6 +3,7 @@ package com.unigent.machines.homesurve1.processor.dynamics;
 import com.unigent.agentbase.library.core.state.TensorPayload;
 import com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading;
 import com.unigent.agentbase.sdk.commons.Config;
+import com.unigent.agentbase.sdk.commons.util.Dates;
 import com.unigent.agentbase.sdk.controller.ConsoleHandle;
 import com.unigent.agentbase.sdk.node.NodeServices;
 import com.unigent.agentbase.sdk.processing.ProcessorBase;
@@ -23,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.lang.Math.abs;
+
 /**
  * Home Surveillance Robot, POC 1
  * Unigent Robotics, 2020
@@ -31,7 +34,7 @@ import java.util.stream.Collectors;
 @AgentBaseProcessor(
         consumedData = {
                 @ConsumedDataFlow(dataType = ObjectScenePayload.class, localName = "scene"),
-                @ConsumedDataFlow(dataType = TensorPayload.class, localName = "linear_motion"),
+                @ConsumedDataFlow(dataType = TensorPayload.class, localName = "linear_motion", description = "[path along X,velocity along X, delta time]"),
                 @ConsumedDataFlow(dataType = XYZOrientationReading.class, localName = "simulated_orientation")
         }
 )
@@ -41,11 +44,16 @@ public class MapDynamicsCollector extends ProcessorBase {
 
     static List<MapStateTransition> dynamicBuffer = Collections.synchronizedList(new ArrayList<>());
 
-    private static final long TIME_RANGE_MILLIS = 50;
+    private static final double DETECTABLE_AZIMUTH_CHANGE_DEGREES = 2.0;
+    private static final double DETECTABLE_MOTION_CHANGE_METERS = 0.05;
+
+    private static final long TIME_RANGE_MILLIS = 80;
     private static final URI TOPIC_XYZ = URI.create("simulated_orientation");
     private static final URI TOPIC_LINEAR_MOTION = URI.create("linear_motion");
 
     private MapState previousState = null;
+
+    private Double previousAzimuth;
 
     public MapDynamicsCollector(String name) {
         super(name);
@@ -72,19 +80,29 @@ public class MapDynamicsCollector extends ProcessorBase {
         ObjectScenePayload scene = (ObjectScenePayload) stateUpdate.getPayload();
         long sourceImageTimestamp = scene.getSourceImageTimestamp();
 
+        log.info("dynamics# Got scene with {} objects at {}", scene.getObjects().size(), Dates.toLocalTime(sourceImageTimestamp));
+
+        long fromMillis = sourceImageTimestamp - TIME_RANGE_MILLIS;
+        long toMillis = sourceImageTimestamp + TIME_RANGE_MILLIS;
+
         XYZOrientationReading relatedOrientationReading = nodeServices.stateBus.ensureTopic(TOPIC_XYZ)
-                .getData(sourceImageTimestamp - TIME_RANGE_MILLIS, sourceImageTimestamp + TIME_RANGE_MILLIS)
+                .getData(fromMillis, toMillis)
                 .stream()
                 .map(update->(XYZOrientationReading) update.getPayload())
                 .findFirst()
-                .orElseThrow(()->new RuntimeException("No related XYZ orientation reading"));
+                .orElseThrow(()-> new RuntimeException("No related XYZ orientation reading between " + Dates.toLocalTime(fromMillis) + " and " + Dates.toLocalTime(toMillis)));
+
+        if(previousAzimuth == null) {
+            previousAzimuth = relatedOrientationReading.getAzimuth();
+            return;
+        }
 
         TensorPayload relatedLinearMotionReading = nodeServices.stateBus.ensureTopic(TOPIC_LINEAR_MOTION)
                 .getData(sourceImageTimestamp - TIME_RANGE_MILLIS, sourceImageTimestamp + TIME_RANGE_MILLIS)
                 .stream()
                 .map(update->(TensorPayload) update.getPayload())
                 .findFirst()
-                .orElseThrow(()->new RuntimeException("No related Linear Motion reading"));
+                .orElse(null);
 
         MapState nextState = new MapState(
                 scene.getObjects().stream()
@@ -96,7 +114,17 @@ public class MapDynamicsCollector extends ProcessorBase {
         log.info("dynamics# Got state {}", nextState);
 
         if(previousState != null) {
-            MapAction action = new MapAction(relatedOrientationReading.getAngularVelocityGamma(), relatedLinearMotionReading.toVector()[0]);
+            double deltaX = relatedLinearMotionReading == null ? 0.0 : relatedLinearMotionReading.toVector()[0];
+            if(abs(deltaX) < DETECTABLE_MOTION_CHANGE_METERS) {
+                deltaX = 0.0;
+            }
+
+            double deltaAzimuth = relatedOrientationReading.getAzimuth() - previousAzimuth;
+            if(abs(deltaAzimuth) < DETECTABLE_AZIMUTH_CHANGE_DEGREES) {
+                deltaAzimuth = 0.0;
+            }
+
+            MapAction action = new MapAction(deltaAzimuth, deltaX);
             dynamicBuffer.add(new MapStateTransition(previousState, action, nextState));
             log.info("dynamics# Buffer size: {}", dynamicBuffer.size());
         }

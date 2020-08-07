@@ -7,13 +7,25 @@ package com.unigent.machines.homesurve1.processor.dynamics;
  **/
 public class MapStateTransition {
 
-    private final MapState fromState;
-    private final MapAction action;
-    private final MapState toState;
+    private MapState fromState;
+    private MapAction action;
+    private MapState toState;
 
     public MapStateTransition(MapState fromState, MapAction action, MapState toState) {
         this.fromState = fromState;
         this.action = action;
+        this.toState = toState;
+    }
+
+    public void setFromState(MapState fromState) {
+        this.fromState = fromState;
+    }
+
+    public void setAction(MapAction action) {
+        this.action = action;
+    }
+
+    public void setToState(MapState toState) {
         this.toState = toState;
     }
 
