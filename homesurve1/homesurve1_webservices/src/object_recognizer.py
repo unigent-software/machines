@@ -19,6 +19,7 @@ app = Flask(__name__)
 config_debug = False
 
 
+
 def detect(img, timestamp):
     height, width, channels = img.shape
 

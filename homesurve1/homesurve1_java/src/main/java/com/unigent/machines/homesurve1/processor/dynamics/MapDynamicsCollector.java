@@ -4,6 +4,7 @@ import com.unigent.agentbase.library.core.state.TensorPayload;
 import com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading;
 import com.unigent.agentbase.sdk.commons.Config;
 import com.unigent.agentbase.sdk.commons.util.Dates;
+import com.unigent.agentbase.sdk.commons.util.JSON;
 import com.unigent.agentbase.sdk.controller.ConsoleHandle;
 import com.unigent.agentbase.sdk.node.NodeServices;
 import com.unigent.agentbase.sdk.processing.ProcessorBase;
@@ -13,14 +14,15 @@ import com.unigent.agentbase.sdk.state.StateUpdate;
 import com.unigent.machines.homesurve1.state.ObjectScenePayload;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dizitart.no2.Nitrite;
+import org.dizitart.no2.objects.ObjectFilter;
+import org.dizitart.no2.objects.ObjectRepository;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.PrintWriter;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -42,8 +44,6 @@ public class MapDynamicsCollector extends ProcessorBase {
 
     private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-    static List<MapStateTransition> dynamicBuffer = Collections.synchronizedList(new ArrayList<>());
-
     private static final double DETECTABLE_AZIMUTH_CHANGE_DEGREES = 2.0;
     private static final double DETECTABLE_MOTION_CHANGE_METERS = 0.05;
 
@@ -55,8 +55,14 @@ public class MapDynamicsCollector extends ProcessorBase {
 
     private Double previousAzimuth;
 
+    private Nitrite mapDynamicsDb;
+    private ObjectRepository<MapStateTransition> mapStateTransitionRepo;
+
+    static MapDynamicsCollector instance;
+
     public MapDynamicsCollector(String name) {
         super(name);
+        instance = this;
     }
 
     @Override
@@ -66,14 +72,22 @@ public class MapDynamicsCollector extends ProcessorBase {
     }
 
     @Override
+    public void initiate() {
+        super.initiate();
+        this.mapDynamicsDb = nodeServices.nitriteManager.getNitrite("map_dynamics");
+        this.mapStateTransitionRepo = this.mapDynamicsDb.getRepository(MapStateTransition.class);
+    }
+
+    @Override
+    public void shutdown() {
+        this.mapDynamicsDb.close();
+        super.shutdown();
+    }
+
+    @Override
     public void onStateUpdate(@Nonnull StateUpdate stateUpdate, @Nonnull URI sourceTopic, @Nullable String localBinding) {
 
         if(!"scene".equals(localBinding)) {
-            return;
-        }
-
-        if(dynamicBuffer.size() > 1000) {
-            log.error("Dynamics buffer overflow. The experiment is over!");
             return;
         }
 
@@ -125,10 +139,33 @@ public class MapDynamicsCollector extends ProcessorBase {
             }
 
             MapAction action = new MapAction(deltaAzimuth, deltaX);
-            dynamicBuffer.add(new MapStateTransition(previousState, action, nextState));
-            log.info("dynamics# Buffer size: {}", dynamicBuffer.size());
+            MapStateTransition stateTransition = new MapStateTransition(previousState, action, nextState);
+
+            this.mapStateTransitionRepo.insert(stateTransition);
+            this.mapDynamicsDb.commit();
         }
 
         previousState = nextState;
+    }
+
+    long getBufferSize() {
+        return this.mapStateTransitionRepo.size();
+    }
+
+    void clearBuffer() {
+        this.mapStateTransitionRepo.drop();
+        this.mapStateTransitionRepo = this.mapDynamicsDb.getRepository(MapStateTransition.class);
+    }
+
+    void dump(PrintWriter writer) {
+        this.mapStateTransitionRepo.find().forEach(st->{
+            try {
+                JSON.mapper.writerWithDefaultPrettyPrinter().writeValue(writer, st);
+                writer.println();
+            }
+            catch (Exception e) {
+                throw new RuntimeException("Unable to dump: " + e.getMessage(), e);
+            }
+        });
     }
 }

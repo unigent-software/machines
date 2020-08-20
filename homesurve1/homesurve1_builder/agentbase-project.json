@@ -48,12 +48,6 @@
     "payloadType" : "com.unigent.agentbase.library.core.state.ImagePayload",
     "maxSize" : 1
   }, {
-    "uri" : "simulated_orientation",
-    "description" : "",
-    "payloadType" : "com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading",
-    "maxSize" : 2000,
-    "maxAgeMillis" : 10000
-  }, {
     "uri" : "scene_debug",
     "description" : "",
     "payloadType" : "com.unigent.machines.homesurve1.state.ObjectSceneDebugPayload",
@@ -75,7 +69,31 @@
     "maxSize" : 500,
     "maxAgeMillis" : 10000
   } ],
-  "actionSpaces" : [ ],
+  "actionSpaces" : [ {
+    "uri" : "motor",
+    "type" : "Discrete",
+    "level" : "PROCESSOR",
+    "discreteActionSpaceDetails" : {
+      "actions" : {
+        "step_backward" : "Makes a step backward",
+        "step_forward" : "Makes a step forward",
+        "stop" : "Stop",
+        "turn_left" : "Turns left",
+        "turn_right" : "Turns right"
+      }
+    },
+    "handlerProcessorName" : "motor_actions"
+  }, {
+    "uri" : "actuator",
+    "type" : "Continuous",
+    "level" : "ACTUATOR",
+    "continuousActionSpaceDetails" : {
+      "dimensions" : 2,
+      "minValue" : -1.0,
+      "maxValue" : 1.0,
+      "sourceUris" : [ "motor_left", "motor_right" ]
+    }
+  } ],
   "processors" : [ {
     "name" : "object_detector",
     "description" : "",
@@ -88,11 +106,11 @@
         "localName" : "camera_frame"
       } ],
       "producedData" : [ {
-        "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
-        "localName" : "detected_objects_debug"
-      }, {
         "dataType" : "com.unigent.agentbase.library.core.state.JsonPayload",
         "localName" : "detected_objects"
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
+        "localName" : "detected_objects_debug"
       } ],
       "configDeclaration" : [ {
         "name" : "debug",
@@ -151,7 +169,7 @@
       "description" : "Scales provided image to the provided size",
       "logicTech" : "Java",
       "processorClass" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
+      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
       "displayName" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize"
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize",
@@ -209,7 +227,7 @@
       "description" : "",
       "logicTech" : "Java",
       "processorClass" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
+      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
       "displayName" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder"
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder",
@@ -222,7 +240,7 @@
       "localBinding" : "depth_image",
       "serializationMode" : "binary"
     }, {
-      "topicName" : "simulated_orientation",
+      "topicName" : "sensor/orientation/bno055",
       "localBinding" : "orientation",
       "serializationMode" : "binary"
     } ],
@@ -267,7 +285,7 @@
       "description" : "",
       "logicTech" : "Java",
       "processorClass" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
+      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
       "displayName" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter"
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter",
@@ -286,44 +304,6 @@
       "serializationMode" : "binary"
     } ],
     "config" : { }
-  }, {
-    "name" : "orientation_simulator",
-    "description" : "",
-    "logicTech" : "Java",
-    "enabled" : true,
-    "sourceJarPath" : {
-      "relative" : true,
-      "path" : "maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar"
-    },
-    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
-    "metadata" : {
-      "consumedData" : [ ],
-      "producedData" : [ {
-        "dataType" : "com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading",
-        "localName" : "orientation"
-      } ],
-      "configDeclaration" : [ {
-        "name" : "intervalMillis",
-        "required" : true
-      } ],
-      "continuousActionDimensions" : [ ],
-      "discreteActions" : [ ],
-      "description" : "",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
-      "displayName" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator"
-    },
-    "javaClassName" : "com.unigent.agentbase.library.core.processor.OrientationSensorSimulator",
-    "inputs" : [ ],
-    "outputs" : [ {
-      "topicName" : "simulated_orientation",
-      "localBinding" : "orientation",
-      "serializationMode" : "binary"
-    } ],
-    "config" : {
-      "intervalMillis" : "80"
-    }
   }, {
     "name" : "scene_filter",
     "description" : "",
@@ -349,7 +329,7 @@
       "description" : "",
       "logicTech" : "Java",
       "processorClass" : "com.unigent.machines.homesurve1.processor.ObjectSceneFilter",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
+      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
       "displayName" : "com.unigent.machines.homesurve1.processor.ObjectSceneFilter"
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.ObjectSceneFilter",
@@ -389,7 +369,7 @@
       "description" : "Produces linear motion (travel and velocity) value (+/-) in meters",
       "logicTech" : "Java",
       "processorClass" : "com.unigent.machines.homesurve1.processor.LinearMotionDetector",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
+      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
       "displayName" : "com.unigent.machines.homesurve1.processor.LinearMotionDetector"
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.LinearMotionDetector",
@@ -432,7 +412,7 @@
       "description" : "",
       "logicTech" : "Java",
       "processorClass" : "com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector",
-      "sourceJarPath" : "/home/paul/Development/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
+      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
       "displayName" : "com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector"
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector",
@@ -445,8 +425,124 @@
       "localBinding" : "linear_motion",
       "serializationMode" : "binary"
     }, {
-      "topicName" : "simulated_orientation",
+      "topicName" : "sensor/orientation/bno055",
       "localBinding" : "simulated_orientation",
+      "serializationMode" : "binary"
+    } ],
+    "outputs" : [ ],
+    "config" : { }
+  }, {
+    "name" : "motor_actions",
+    "description" : "",
+    "logicTech" : "Java",
+    "enabled" : true,
+    "sourceJarPath" : {
+      "relative" : true,
+      "path" : "maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar"
+    },
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "metadata" : {
+      "consumedData" : [ ],
+      "producedData" : [ ],
+      "configDeclaration" : [ ],
+      "continuousActionDimensions" : [ ],
+      "discreteActions" : [ {
+        "uri" : "stop",
+        "description" : "Stop"
+      }, {
+        "uri" : "step_forward",
+        "description" : "Makes a step forward"
+      }, {
+        "uri" : "step_backward",
+        "description" : "Makes a step backward"
+      }, {
+        "uri" : "turn_left",
+        "description" : "Turns left"
+      }, {
+        "uri" : "turn_right",
+        "description" : "Turns right"
+      } ],
+      "description" : "Provides a basic set of motor actions",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.machines.homesurve1.processor.actor.MotorActions",
+      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
+      "displayName" : "com.unigent.machines.homesurve1.processor.actor.MotorActions"
+    },
+    "javaClassName" : "com.unigent.machines.homesurve1.processor.actor.MotorActions",
+    "inputs" : [ ],
+    "outputs" : [ ],
+    "config" : { }
+  }, {
+    "name" : "safety_reflexes",
+    "description" : "",
+    "logicTech" : "Java",
+    "enabled" : true,
+    "sourceJarPath" : {
+      "relative" : true,
+      "path" : "maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar"
+    },
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "metadata" : {
+      "consumedData" : [ {
+        "dataType" : "com.unigent.agentbase.library.core.state.sensor.BinaryValueReading",
+        "localName" : "prox_front_left"
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.sensor.BinaryValueReading",
+        "localName" : "prox_front_right"
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.sensor.BinaryValueReading",
+        "localName" : "prox_back"
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.sensor.DistanceReading",
+        "localName" : "sonar_front"
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.sensor.DistanceReading",
+        "localName" : "sonar_back"
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.sensor.DistanceReading",
+        "localName" : "sonar_left"
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.sensor.DistanceReading",
+        "localName" : "sonar_right"
+      } ],
+      "producedData" : [ ],
+      "configDeclaration" : [ ],
+      "continuousActionDimensions" : [ ],
+      "discreteActions" : [ ],
+      "description" : "Provides basic safety reflexes when proximity sensors trigger",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.machines.homesurve1.processor.actor.SafetyReflexes",
+      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
+      "displayName" : "com.unigent.machines.homesurve1.processor.actor.SafetyReflexes"
+    },
+    "javaClassName" : "com.unigent.machines.homesurve1.processor.actor.SafetyReflexes",
+    "inputs" : [ {
+      "topicName" : "sensor/value/binary/prox_front_left",
+      "localBinding" : "prox_front_left",
+      "serializationMode" : "binary"
+    }, {
+      "topicName" : "sensor/value/binary/prox_front_right",
+      "localBinding" : "prox_front_right",
+      "serializationMode" : "binary"
+    }, {
+      "topicName" : "sensor/value/binary/prox_back",
+      "localBinding" : "prox_back",
+      "serializationMode" : "binary"
+    }, {
+      "topicName" : "sensor/distance/sonar_front",
+      "localBinding" : "sonar_front",
+      "serializationMode" : "binary"
+    }, {
+      "topicName" : "sensor/distance/sonar_back",
+      "localBinding" : "sonar_back",
+      "serializationMode" : "binary"
+    }, {
+      "topicName" : "sensor/distance/sonar_left",
+      "localBinding" : "sonar_left",
+      "serializationMode" : "binary"
+    }, {
+      "topicName" : "sensor/distance/sonar_right",
+      "localBinding" : "sonar_right",
       "serializationMode" : "binary"
     } ],
     "outputs" : [ ],
@@ -467,14 +563,14 @@
   "nodes" : [ {
     "id" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
     "master" : true,
-    "name" : "desktop",
-    "address" : "192.168.1.2",
+    "name" : "robot",
+    "address" : "192.168.1.5",
     "config" : {
       "init_on_start" : "true"
     },
     "controllers" : [ {
       "id" : "986271a2-6020-4ad0-8874-8142f02dcb10",
-      "uri" : "local_hardware",
+      "uri" : "raspberry_pi",
       "description" : "",
       "connectionType" : "Local",
       "address" : "ttyACM0",
@@ -490,6 +586,125 @@
         "config" : { }
       } ],
       "config" : { }
+    }, {
+      "id" : "166733a7-d1e3-423c-ab5f-900d8e19cb12",
+      "uri" : "mega_2560",
+      "description" : "",
+      "connectionType" : "Serial",
+      "address" : "ttyACM0",
+      "controllerDefinitionUri" : "unigent:agentbase:core:hardware:arduino",
+      "boardTypeUri" : "mega2560",
+      "actuators" : [ {
+        "uri" : "motor_left",
+        "typeUri" : "dc_motor",
+        "description" : "",
+        "config" : {
+          "I2_pin" : "39",
+          "EN_pin" : "6",
+          "motor_max_abs_speed" : "100",
+          "I1_pin" : "38"
+        }
+      }, {
+        "uri" : "motor_right",
+        "typeUri" : "dc_motor",
+        "description" : "",
+        "config" : {
+          "I2_pin" : "41",
+          "EN_pin" : "5",
+          "motor_max_abs_speed" : "100",
+          "I1_pin" : "40"
+        }
+      } ],
+      "sensors" : [ {
+        "uri" : "sonar_front",
+        "typeUri" : "sr04",
+        "description" : "",
+        "readingHistorySize" : 1,
+        "config" : {
+          "trigger_pin" : "30",
+          "ignore_zero" : "true",
+          "echo_pin" : "31",
+          "max_distance" : "200"
+        }
+      }, {
+        "uri" : "sonar_left",
+        "typeUri" : "sr04",
+        "description" : "",
+        "readingHistorySize" : 1,
+        "config" : {
+          "trigger_pin" : "34",
+          "ignore_zero" : "true",
+          "echo_pin" : "35",
+          "max_distance" : "200"
+        }
+      }, {
+        "uri" : "sonar_right",
+        "typeUri" : "sr04",
+        "description" : "",
+        "readingHistorySize" : 1,
+        "config" : {
+          "trigger_pin" : "36",
+          "ignore_zero" : "true",
+          "echo_pin" : "37",
+          "max_distance" : "200"
+        }
+      }, {
+        "uri" : "sonar_back",
+        "typeUri" : "sr04",
+        "description" : "",
+        "readingHistorySize" : 1,
+        "config" : {
+          "trigger_pin" : "32",
+          "ignore_zero" : "true",
+          "echo_pin" : "33",
+          "max_distance" : "200"
+        }
+      }, {
+        "uri" : "prox_front_left",
+        "typeUri" : "binary_value",
+        "description" : "",
+        "readingHistorySize" : 1,
+        "config" : {
+          "invert_reading" : "true",
+          "digital_pin" : "46"
+        }
+      }, {
+        "uri" : "prox_front_right",
+        "typeUri" : "binary_value",
+        "description" : "",
+        "readingHistorySize" : 1,
+        "config" : {
+          "invert_reading" : "true",
+          "digital_pin" : "47"
+        }
+      }, {
+        "uri" : "prox_back",
+        "typeUri" : "binary_value",
+        "description" : "",
+        "readingHistorySize" : 1,
+        "config" : {
+          "invert_reading" : "true",
+          "digital_pin" : "48"
+        }
+      }, {
+        "uri" : "bno055",
+        "typeUri" : "bno055",
+        "description" : "",
+        "readingHistorySize" : 1,
+        "config" : {
+          "include_angular_velocity" : "true",
+          "i2c_address" : "40",
+          "include_linear_acceleration" : "true"
+        }
+      } ],
+      "config" : {
+        "serial_connection_type" : "Serial",
+        "commands_require_response" : "true",
+        "status_led_pin" : "13",
+        "serial_connection_baud_rate" : "115200",
+        "status_update_interval" : "20",
+        "verbose" : "false"
+      }
     } ]
   } ],
   "libraryItems" : [ {

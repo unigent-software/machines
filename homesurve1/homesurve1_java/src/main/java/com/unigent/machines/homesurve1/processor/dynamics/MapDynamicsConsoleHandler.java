@@ -1,10 +1,12 @@
 package com.unigent.machines.homesurve1.processor.dynamics;
 
-import com.unigent.agentbase.sdk.commons.util.JSON;
 import com.unigent.agentbase.sdk.node.Console;
 import com.unigent.agentbase.sdk.node.ConsoleCommandHandler;
+import com.unigent.agentbase.sdk.node.NodeServices;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.List;
 
 /**
@@ -19,8 +21,8 @@ public class MapDynamicsConsoleHandler implements ConsoleCommandHandler {
     Console console;
 
     @Override
-    public void configure(Console console) {
-        this.console = console;
+    public void configure(NodeServices nodeServices) {
+        this.console = nodeServices.console;
     }
 
     @Override
@@ -44,17 +46,19 @@ public class MapDynamicsConsoleHandler implements ConsoleCommandHandler {
         switch(subCommand) {
             case "dump":
                 File dump = new File(System.getProperty("user.home") + File.separator + DUMP_NAME);
-                JSON.mapper.writerWithDefaultPrettyPrinter().writeValue(dump, MapDynamicsCollector.dynamicBuffer);
-                console.inform("Dumped!");
+                try (PrintWriter writer = new PrintWriter(new FileWriter(dump))) {
+                    MapDynamicsCollector.instance.dump(writer);
+                }
+                console.inform("Dumped to " + dump.getCanonicalPath());
                 break;
 
             case "clear":
-                MapDynamicsCollector.dynamicBuffer.clear();
+                MapDynamicsCollector.instance.clearBuffer();
                 console.inform("Cleared!");
                 break;
 
             case "size":
-                console.inform("So far " + MapDynamicsCollector.dynamicBuffer.size());
+                console.inform("So far " + MapDynamicsCollector.instance.getBufferSize());
                 break;
 
             default:

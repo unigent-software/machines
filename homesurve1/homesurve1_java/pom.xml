@@ -36,6 +36,13 @@
             <version>0.2.0-SNAPSHOT</version>
         </dependency>
 
+        <!-- Findbugs -->
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
         <!-- JUnit -->
         <dependency>
             <groupId>junit</groupId>
