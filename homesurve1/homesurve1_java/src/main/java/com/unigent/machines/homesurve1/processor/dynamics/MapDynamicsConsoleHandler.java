@@ -2,6 +2,7 @@ package com.unigent.machines.homesurve1.processor.dynamics;
 
 import com.unigent.agentbase.sdk.node.Console;
 import com.unigent.agentbase.sdk.node.ConsoleCommandHandler;
+import com.unigent.agentbase.sdk.node.ConsoleCommandHandlerBase;
 import com.unigent.agentbase.sdk.node.NodeServices;
 
 import java.io.File;
@@ -14,16 +15,9 @@ import java.util.List;
  * Unigent Robotics, 2020
  * <a href="http://unigent.com">Unigent</a>
  **/
-public class MapDynamicsConsoleHandler implements ConsoleCommandHandler {
+public class MapDynamicsConsoleHandler extends ConsoleCommandHandlerBase {
 
     final static String DUMP_NAME = "homesurve_dynamics.json";
-
-    Console console;
-
-    @Override
-    public void configure(NodeServices nodeServices) {
-        this.console = nodeServices.console;
-    }
 
     @Override
     public String help() {
