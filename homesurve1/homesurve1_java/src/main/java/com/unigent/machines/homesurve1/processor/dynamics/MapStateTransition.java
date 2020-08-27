@@ -1,5 +1,6 @@
 package com.unigent.machines.homesurve1.processor.dynamics;
 
+import com.unigent.agentbase.sdk.commons.util.Ids;
 import org.dizitart.no2.objects.Id;
 
 /**
@@ -16,7 +17,11 @@ public class MapStateTransition {
     private MapAction action;
     private MapState toState;
 
+    public MapStateTransition() {
+    }
+
     public MapStateTransition(MapState fromState, MapAction action, MapState toState) {
+        this.id = Ids.randomId();
         this.fromState = fromState;
         this.action = action;
         this.toState = toState;

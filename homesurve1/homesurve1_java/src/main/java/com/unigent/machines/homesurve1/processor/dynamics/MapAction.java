@@ -10,6 +10,9 @@ public class MapAction {
     private double deltaGamma;
     private double deltaX;
 
+    public MapAction() {
+    }
+
     public MapAction(double deltaGamma, double deltaX) {
         this.deltaGamma = deltaGamma;
         this.deltaX = deltaX;

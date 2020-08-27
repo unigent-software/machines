@@ -68,6 +68,16 @@
     "payloadType" : "com.unigent.agentbase.library.core.state.TensorPayload",
     "maxSize" : 500,
     "maxAgeMillis" : 10000
+  }, {
+    "uri" : "recognized_scene",
+    "description" : "Scene annotated with object IDs from object memory",
+    "payloadType" : "com.unigent.machines.homesurve1.state.RecognizedObjectScenePayload",
+    "maxSize" : 1
+  }, {
+    "uri" : "target_label",
+    "description" : "Contains label the robot is looking for when executing \"go\" task",
+    "payloadType" : "com.unigent.agentbase.library.core.state.StringPayload",
+    "maxSize" : 1
   } ],
   "actionSpaces" : [ {
     "uri" : "motor",
@@ -93,6 +103,16 @@
       "maxValue" : 1.0,
       "sourceUris" : [ "motor_left", "motor_right" ]
     }
+  }, {
+    "uri" : "task",
+    "type" : "Discrete",
+    "level" : "PROCESSOR",
+    "discreteActionSpaceDetails" : {
+      "actions" : {
+        "go" : "Goes to an object labeled by payload in target label topic"
+      }
+    },
+    "handlerProcessorName" : "user_task_executor"
   } ],
   "processors" : [ {
     "name" : "object_detector",
@@ -103,7 +123,8 @@
     "metadata" : {
       "consumedData" : [ {
         "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
-        "localName" : "camera_frame"
+        "localName" : "camera_frame",
+        "receiveUpdates" : true
       } ],
       "producedData" : [ {
         "dataType" : "com.unigent.agentbase.library.core.state.JsonPayload",
@@ -124,7 +145,8 @@
     "inputs" : [ {
       "topicName" : "rgb_image_416",
       "localBinding" : "camera_frame",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     } ],
     "outputs" : [ {
       "topicName" : "detected_objects",
@@ -151,7 +173,8 @@
     "metadata" : {
       "consumedData" : [ {
         "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
-        "localName" : "input_image"
+        "localName" : "input_image",
+        "receiveUpdates" : true
       } ],
       "producedData" : [ {
         "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
@@ -176,7 +199,8 @@
     "inputs" : [ {
       "topicName" : "rgb_image",
       "localBinding" : "input_image",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     } ],
     "outputs" : [ {
       "topicName" : "rgb_image_416",
@@ -200,13 +224,16 @@
     "metadata" : {
       "consumedData" : [ {
         "dataType" : "com.unigent.agentbase.library.core.state.JsonPayload",
-        "localName" : "detected_objects_json"
+        "localName" : "detected_objects_json",
+        "receiveUpdates" : true
       }, {
         "dataType" : "com.unigent.agentbase.library.core.state.TensorPayload",
-        "localName" : "depth_image"
+        "localName" : "depth_image",
+        "receiveUpdates" : true
       }, {
         "dataType" : "com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading",
-        "localName" : "orientation"
+        "localName" : "orientation",
+        "receiveUpdates" : true
       } ],
       "producedData" : [ {
         "dataType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
@@ -234,15 +261,18 @@
     "inputs" : [ {
       "topicName" : "detected_objects_(depth_image)",
       "localBinding" : "detected_objects_json",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     }, {
       "topicName" : "depth_image_(detected_objects)",
       "localBinding" : "depth_image",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     }, {
       "topicName" : "sensor/orientation/bno055",
       "localBinding" : "orientation",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     } ],
     "outputs" : [ {
       "topicName" : "scene",
@@ -270,7 +300,8 @@
     "metadata" : {
       "consumedData" : [ {
         "dataType" : "com.unigent.agentbase.library.core.state.sensor.CameraFrame",
-        "localName" : "rgbd_frame"
+        "localName" : "rgbd_frame",
+        "receiveUpdates" : true
       } ],
       "producedData" : [ {
         "dataType" : "com.unigent.agentbase.library.core.state.ImagePayload",
@@ -292,7 +323,8 @@
     "inputs" : [ {
       "topicName" : "sensor/vision/realsense_camera",
       "localBinding" : "rgbd_frame",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     } ],
     "outputs" : [ {
       "topicName" : "rgb_image",
@@ -317,7 +349,8 @@
     "metadata" : {
       "consumedData" : [ {
         "dataType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
-        "localName" : "scene_input"
+        "localName" : "scene_input",
+        "receiveUpdates" : true
       } ],
       "producedData" : [ {
         "dataType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
@@ -336,7 +369,8 @@
     "inputs" : [ {
       "topicName" : "scene",
       "localBinding" : "scene_input",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     } ],
     "outputs" : [ {
       "topicName" : "filtered_scene",
@@ -357,7 +391,8 @@
     "metadata" : {
       "consumedData" : [ {
         "dataType" : "com.unigent.agentbase.library.core.state.TensorPayload",
-        "localName" : "depth_image"
+        "localName" : "depth_image",
+        "receiveUpdates" : true
       } ],
       "producedData" : [ {
         "dataType" : "com.unigent.agentbase.library.core.state.TensorPayload",
@@ -376,7 +411,8 @@
     "inputs" : [ {
       "topicName" : "depth_image",
       "localBinding" : "depth_image",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     } ],
     "outputs" : [ {
       "topicName" : "linear_motion",
@@ -385,7 +421,7 @@
     } ],
     "config" : { }
   }, {
-    "name" : "dynamics_collector",
+    "name" : "map_dynamics_collector",
     "description" : "",
     "logicTech" : "Java",
     "enabled" : true,
@@ -396,14 +432,17 @@
     "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
     "metadata" : {
       "consumedData" : [ {
-        "dataType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
-        "localName" : "scene"
+        "dataType" : "com.unigent.machines.homesurve1.state.RecognizedObjectScenePayload",
+        "localName" : "recognized_scene",
+        "receiveUpdates" : true
       }, {
         "dataType" : "com.unigent.agentbase.library.core.state.TensorPayload",
-        "localName" : "linear_motion"
+        "localName" : "linear_motion",
+        "receiveUpdates" : false
       }, {
         "dataType" : "com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading",
-        "localName" : "simulated_orientation"
+        "localName" : "sensor/orientation/bno055",
+        "receiveUpdates" : false
       } ],
       "producedData" : [ ],
       "configDeclaration" : [ ],
@@ -417,17 +456,20 @@
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector",
     "inputs" : [ {
-      "topicName" : "filtered_scene",
-      "localBinding" : "scene",
-      "serializationMode" : "binary"
+      "topicName" : "recognized_scene",
+      "localBinding" : "recognized_scene",
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     }, {
       "topicName" : "linear_motion",
       "localBinding" : "linear_motion",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : false
     }, {
       "topicName" : "sensor/orientation/bno055",
-      "localBinding" : "simulated_orientation",
-      "serializationMode" : "binary"
+      "localBinding" : "sensor/orientation/bno055",
+      "serializationMode" : "binary",
+      "receiveUpdates" : false
     } ],
     "outputs" : [ ],
     "config" : { }
@@ -485,25 +527,32 @@
     "metadata" : {
       "consumedData" : [ {
         "dataType" : "com.unigent.agentbase.library.core.state.sensor.BinaryValueReading",
-        "localName" : "prox_front_left"
+        "localName" : "prox_front_left",
+        "receiveUpdates" : true
       }, {
         "dataType" : "com.unigent.agentbase.library.core.state.sensor.BinaryValueReading",
-        "localName" : "prox_front_right"
+        "localName" : "prox_front_right",
+        "receiveUpdates" : true
       }, {
         "dataType" : "com.unigent.agentbase.library.core.state.sensor.BinaryValueReading",
-        "localName" : "prox_back"
+        "localName" : "prox_back",
+        "receiveUpdates" : true
       }, {
         "dataType" : "com.unigent.agentbase.library.core.state.sensor.DistanceReading",
-        "localName" : "sonar_front"
+        "localName" : "sonar_front",
+        "receiveUpdates" : true
       }, {
         "dataType" : "com.unigent.agentbase.library.core.state.sensor.DistanceReading",
-        "localName" : "sonar_back"
+        "localName" : "sonar_back",
+        "receiveUpdates" : true
       }, {
         "dataType" : "com.unigent.agentbase.library.core.state.sensor.DistanceReading",
-        "localName" : "sonar_left"
+        "localName" : "sonar_left",
+        "receiveUpdates" : true
       }, {
         "dataType" : "com.unigent.agentbase.library.core.state.sensor.DistanceReading",
-        "localName" : "sonar_right"
+        "localName" : "sonar_right",
+        "receiveUpdates" : true
       } ],
       "producedData" : [ ],
       "configDeclaration" : [ ],
@@ -519,31 +568,144 @@
     "inputs" : [ {
       "topicName" : "sensor/value/binary/prox_front_left",
       "localBinding" : "prox_front_left",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     }, {
       "topicName" : "sensor/value/binary/prox_front_right",
       "localBinding" : "prox_front_right",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     }, {
       "topicName" : "sensor/value/binary/prox_back",
       "localBinding" : "prox_back",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     }, {
       "topicName" : "sensor/distance/sonar_front",
       "localBinding" : "sonar_front",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     }, {
       "topicName" : "sensor/distance/sonar_back",
       "localBinding" : "sonar_back",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     }, {
       "topicName" : "sensor/distance/sonar_left",
       "localBinding" : "sonar_left",
-      "serializationMode" : "binary"
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
     }, {
       "topicName" : "sensor/distance/sonar_right",
       "localBinding" : "sonar_right",
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
+    } ],
+    "outputs" : [ ],
+    "config" : { }
+  }, {
+    "name" : "object_recognizer",
+    "description" : "",
+    "logicTech" : "Java",
+    "enabled" : true,
+    "sourceJarPath" : {
+      "relative" : true,
+      "path" : "maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar"
+    },
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "metadata" : {
+      "consumedData" : [ {
+        "dataType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
+        "localName" : "scene",
+        "receiveUpdates" : true
+      } ],
+      "producedData" : [ {
+        "dataType" : "com.unigent.machines.homesurve1.state.RecognizedObjectScenePayload",
+        "localName" : "recognized_scene"
+      } ],
+      "configDeclaration" : [ ],
+      "continuousActionDimensions" : [ ],
+      "discreteActions" : [ ],
+      "description" : "",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.machines.homesurve1.processor.objectmemory.ObjectRecognizer",
+      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
+      "displayName" : "com.unigent.machines.homesurve1.processor.objectmemory.ObjectRecognizer"
+    },
+    "javaClassName" : "com.unigent.machines.homesurve1.processor.objectmemory.ObjectRecognizer",
+    "inputs" : [ {
+      "topicName" : "filtered_scene",
+      "localBinding" : "scene",
+      "serializationMode" : "binary",
+      "receiveUpdates" : true
+    } ],
+    "outputs" : [ {
+      "topicName" : "recognized_scene",
+      "localBinding" : "recognized_scene",
       "serializationMode" : "binary"
+    } ],
+    "config" : { }
+  }, {
+    "name" : "initializer",
+    "description" : "Initializes the node artifacts, doesn't do any processing",
+    "logicTech" : "Java",
+    "enabled" : true,
+    "sourceJarPath" : {
+      "relative" : true,
+      "path" : "maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar"
+    },
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "metadata" : {
+      "consumedData" : [ ],
+      "producedData" : [ ],
+      "configDeclaration" : [ ],
+      "continuousActionDimensions" : [ ],
+      "discreteActions" : [ ],
+      "description" : "",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.machines.homesurve1.InitializerProcessor",
+      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
+      "displayName" : "com.unigent.machines.homesurve1.InitializerProcessor"
+    },
+    "javaClassName" : "com.unigent.machines.homesurve1.InitializerProcessor",
+    "inputs" : [ ],
+    "outputs" : [ ],
+    "config" : { }
+  }, {
+    "name" : "user_task_executor",
+    "description" : "",
+    "logicTech" : "Java",
+    "enabled" : true,
+    "sourceJarPath" : {
+      "relative" : true,
+      "path" : "maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar"
+    },
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "metadata" : {
+      "consumedData" : [ {
+        "dataType" : "com.unigent.agentbase.library.core.state.StringPayload",
+        "localName" : "target_label",
+        "receiveUpdates" : false
+      } ],
+      "producedData" : [ ],
+      "configDeclaration" : [ ],
+      "continuousActionDimensions" : [ ],
+      "discreteActions" : [ {
+        "uri" : "go",
+        "description" : "Goes to an object labeled by payload in target label topic"
+      } ],
+      "description" : "",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.machines.homesurve1.processor.controller.UserTaskExecutor",
+      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
+      "displayName" : "com.unigent.machines.homesurve1.processor.controller.UserTaskExecutor"
+    },
+    "javaClassName" : "com.unigent.machines.homesurve1.processor.controller.UserTaskExecutor",
+    "inputs" : [ {
+      "topicName" : "target_label",
+      "localBinding" : "target_label",
+      "serializationMode" : "binary",
+      "receiveUpdates" : false
     } ],
     "outputs" : [ ],
     "config" : { }
@@ -690,7 +852,8 @@
         "uri" : "bno055",
         "typeUri" : "bno055",
         "description" : "",
-        "readingHistorySize" : 1,
+        "readingHistorySize" : 10000,
+        "readingMaxAgeMillis" : 2000,
         "config" : {
           "include_angular_velocity" : "true",
           "i2c_address" : "40",

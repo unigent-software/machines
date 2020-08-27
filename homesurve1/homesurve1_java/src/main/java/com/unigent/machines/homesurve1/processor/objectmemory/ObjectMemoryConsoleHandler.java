@@ -1,6 +1,8 @@
-package com.unigent.machines.homesurve1.processor.dynamics;
+package com.unigent.machines.homesurve1.processor.objectmemory;
 
+import com.google.common.base.Joiner;
 import com.unigent.agentbase.sdk.node.ConsoleCommandHandlerBase;
+import com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -12,9 +14,15 @@ import java.util.List;
  * Unigent Robotics, 2020
  * <a href="http://unigent.com">Unigent</a>
  **/
-public class MapDynamicsConsoleHandler extends ConsoleCommandHandlerBase {
+public class ObjectMemoryConsoleHandler extends ConsoleCommandHandlerBase {
 
-    final static String DUMP_NAME = "map_dynamics.json";
+    final static String DUMP_NAME = "object_memory.json";
+
+    private final ObjectMemory objectMemory;
+
+    public ObjectMemoryConsoleHandler(ObjectMemory objectMemory) {
+        this.objectMemory = objectMemory;
+    }
 
     @Override
     public String help() {
@@ -23,33 +31,32 @@ public class MapDynamicsConsoleHandler extends ConsoleCommandHandlerBase {
 
     @Override
     public List<String> getFirstTokens() {
-        return List.of("dynamics");
+        return List.of("objects");
     }
 
     @Override
     public boolean handle(List<String> tokens) throws Exception {
         if(tokens.size() < 2) {
-            console.inform("Need more arguments (dump, clear, size)");
+            console.inform("Need more arguments (dump, size, list)");
             return true;
         }
 
         String subCommand = tokens.get(1);
         switch(subCommand) {
             case "dump":
-                File dump = new File(console.getNodeServices().nodeDataDir + DUMP_NAME);
+                File dump = new File(console.getNodeServices().nodeDataDir, DUMP_NAME);
                 try (PrintWriter writer = new PrintWriter(new FileWriter(dump))) {
-                    int cnt = MapDynamicsCollector.instance.dump(writer);
+                    int cnt = objectMemory.dump(writer);
                     console.inform("Dumped " + cnt + " items to " + dump.getCanonicalPath());
                 }
                 break;
 
-            case "clear":
-                MapDynamicsCollector.instance.clearBuffer();
-                console.inform("Cleared!");
+            case "size":
+                console.inform("So far " + objectMemory.size());
                 break;
 
-            case "size":
-                console.inform("So far " + MapDynamicsCollector.instance.getBufferSize());
+            case "list":
+                console.inform("All objects:\n" + Joiner.on('\n').join(objectMemory.findObjects()));
                 break;
 
             default:

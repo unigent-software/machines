@@ -10,7 +10,7 @@ public class SceneObject {
     private int classId;
     private String label;
     private double distanceMeters;
-    private double azimuthDegrees;
+    private double azimuthDegrees; // 0-360
 
     public SceneObject() {
 

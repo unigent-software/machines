@@ -1,5 +1,6 @@
 package com.unigent.machines.homesurve1.processor.dynamics;
 
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.unigent.agentbase.library.core.state.TensorPayload;
 import com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading;
 import com.unigent.agentbase.sdk.commons.Config;
@@ -12,6 +13,7 @@ import com.unigent.agentbase.sdk.processing.metadata.AgentBaseProcessor;
 import com.unigent.agentbase.sdk.processing.metadata.ConsumedDataFlow;
 import com.unigent.agentbase.sdk.state.StateUpdate;
 import com.unigent.machines.homesurve1.state.ObjectScenePayload;
+import com.unigent.machines.homesurve1.state.RecognizedObjectScenePayload;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dizitart.no2.Nitrite;
@@ -26,18 +28,34 @@ import java.net.URI;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Math.abs;
 
 /**
+ *
+ * The topics "linear_motion" and "sensor/orientation/bno055" are queried manually
+ *
  * Home Surveillance Robot, POC 1
  * Unigent Robotics, 2020
  * <a href="http://unigent.com">Unigent</a>
  **/
 @AgentBaseProcessor(
         consumedData = {
-                @ConsumedDataFlow(dataType = ObjectScenePayload.class, localName = "scene"),
-                @ConsumedDataFlow(dataType = TensorPayload.class, localName = "linear_motion", description = "[path along X,velocity along X, delta time]"),
-                @ConsumedDataFlow(dataType = XYZOrientationReading.class, localName = "simulated_orientation")
+                @ConsumedDataFlow(
+                        dataType = RecognizedObjectScenePayload.class,
+                        localName = "recognized_scene"
+                ),
+                @ConsumedDataFlow(
+                        dataType = TensorPayload.class,
+                        localName = "linear_motion",
+                        description = "[path along X,velocity along X, delta time]",
+                        receiveUpdates = false
+                ),
+                @ConsumedDataFlow(
+                        dataType = XYZOrientationReading.class,
+                        localName = "sensor/orientation/bno055",
+                        receiveUpdates = false
+                )
         }
 )
 public class MapDynamicsCollector extends ProcessorBase {
@@ -48,7 +66,7 @@ public class MapDynamicsCollector extends ProcessorBase {
     private static final double DETECTABLE_MOTION_CHANGE_METERS = 0.05;
 
     private static final long TIME_RANGE_MILLIS = 80;
-    private static final URI TOPIC_XYZ = URI.create("simulated_orientation");
+    private static final URI TOPIC_XYZ = URI.create("sensor/orientation/bno055");
     private static final URI TOPIC_LINEAR_MOTION = URI.create("linear_motion");
 
     private MapState previousState = null;
@@ -76,6 +94,7 @@ public class MapDynamicsCollector extends ProcessorBase {
         super.initiate();
         this.mapDynamicsDb = nodeServices.nitriteManager.getNitrite("map_dynamics");
         this.mapStateTransitionRepo = this.mapDynamicsDb.getRepository(MapStateTransition.class);
+        nodeServices.stateBus.ensureTopic(TOPIC_XYZ);
     }
 
     @Override
@@ -87,11 +106,9 @@ public class MapDynamicsCollector extends ProcessorBase {
     @Override
     public void onStateUpdate(@Nonnull StateUpdate stateUpdate, @Nonnull URI sourceTopic, @Nullable String localBinding) {
 
-        if(!"scene".equals(localBinding)) {
-            return;
-        }
+        checkArgument("recognized_scene".equals(localBinding), localBinding);
 
-        ObjectScenePayload scene = (ObjectScenePayload) stateUpdate.getPayload();
+        RecognizedObjectScenePayload scene = (RecognizedObjectScenePayload) stateUpdate.getPayload();
         long sourceImageTimestamp = scene.getSourceImageTimestamp();
 
         log.info("dynamics# Got scene with {} objects at {}", scene.getObjects().size(), Dates.toLocalTime(sourceImageTimestamp));
@@ -157,15 +174,19 @@ public class MapDynamicsCollector extends ProcessorBase {
         this.mapStateTransitionRepo = this.mapDynamicsDb.getRepository(MapStateTransition.class);
     }
 
-    void dump(PrintWriter writer) {
-        this.mapStateTransitionRepo.find().forEach(st->{
-            try {
-                JSON.mapper.writerWithDefaultPrettyPrinter().writeValue(writer, st);
-                writer.println();
+    int dump(PrintWriter output) {
+        int cnt = 0;
+        try {
+            ObjectWriter objectWriter = JSON.mapper.writerWithDefaultPrettyPrinter();
+            for(MapStateTransition stateTransition : this.mapStateTransitionRepo.find()) {
+                output.println(objectWriter.writeValueAsString(stateTransition));
+                cnt ++;
             }
-            catch (Exception e) {
-                throw new RuntimeException("Unable to dump: " + e.getMessage(), e);
-            }
-        });
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Unable to dump: " + e.getMessage(), e);
+        }
+        log.info("Dumped {} items", cnt);
+        return cnt;
     }
 }

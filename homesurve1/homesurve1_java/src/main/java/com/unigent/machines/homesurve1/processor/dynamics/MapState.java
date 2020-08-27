@@ -11,6 +11,9 @@ public class MapState {
 
     private List<MapObject> objects;
 
+    public MapState() {
+    }
+
     public MapState(List<MapObject> objects) {
         this.objects = objects;
     }
@@ -35,6 +38,9 @@ public class MapState {
         private int classId;
         private double azimuth;
         private double distance;
+
+        public MapObject() {
+        }
 
         public MapObject(int classId, double azimuth, double distance) {
             this.classId = classId;
