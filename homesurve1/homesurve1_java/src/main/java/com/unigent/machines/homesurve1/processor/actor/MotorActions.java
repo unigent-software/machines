@@ -30,7 +30,7 @@ public class MotorActions extends ProcessorBase {
 
     private static final String ACTUATOR = "actuator";
     private static final ContinuousAction STOP = new ContinuousActionImpl(0.0, 0.0);
-    private static final long STEP_TIME = 500;
+    private static final long STEP_TIME = 200;
 
     public MotorActions(String name) {
         super(name);

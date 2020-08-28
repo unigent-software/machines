@@ -45,15 +45,19 @@ public class ManualControlConsoleHandler extends ConsoleCommandHandlerBase {
 
         switch (tokens.get(1)) {
             case CMD_STEP_FORWARD:
+            case "sf":
                 taskManager.execute(ACTIONS_SPACE_MOTOR, new DiscreteActionImpl(CMD_STEP_FORWARD), TaskRequest.singleShotTask());
                 return true;
             case CMD_STEP_BACKWARD:
+            case "sb":
                 taskManager.execute(ACTIONS_SPACE_MOTOR, new DiscreteActionImpl(CMD_STEP_BACKWARD), TaskRequest.singleShotTask());
                 return true;
             case CMD_TURN_LEFT:
+            case "tl":
                 taskManager.execute(ACTIONS_SPACE_MOTOR, new DiscreteActionImpl(CMD_TURN_LEFT), TaskRequest.singleShotTask());
                 return true;
             case CMD_TURN_RIGHT:
+            case "tr":
                 taskManager.execute(ACTIONS_SPACE_MOTOR, new DiscreteActionImpl(CMD_TURN_RIGHT), TaskRequest.singleShotTask());
                 return true;
         }

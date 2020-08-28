@@ -1,6 +1,6 @@
 package com.unigent.machines.homesurve1.state;
 
-import com.google.common.base.MoreObjects;
+import java.util.StringJoiner;
 
 public class RecognizedSceneObject extends SceneObject {
 
@@ -28,8 +28,9 @@ public class RecognizedSceneObject extends SceneObject {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("objectId", objectId)
+        return new StringJoiner(", ", RecognizedSceneObject.class.getSimpleName() + "[", "]")
+                .add("scene='" + super.toString() + "'")
+                .add("objectId='" + objectId + "'")
                 .toString();
     }
 }

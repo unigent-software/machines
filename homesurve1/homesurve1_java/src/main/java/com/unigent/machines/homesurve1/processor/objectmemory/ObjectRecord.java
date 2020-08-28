@@ -1,10 +1,7 @@
 package com.unigent.machines.homesurve1.processor.objectmemory;
 
-import org.dizitart.no2.objects.Id;
-
 public class ObjectRecord {
 
-    @Id
     private String subjectObjectId; // <classId>-<#>
     private int subjectClassId;
     private String subjectLabel;

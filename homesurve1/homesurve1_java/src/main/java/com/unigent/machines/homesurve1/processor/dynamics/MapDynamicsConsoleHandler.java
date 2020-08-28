@@ -36,7 +36,7 @@ public class MapDynamicsConsoleHandler extends ConsoleCommandHandlerBase {
         String subCommand = tokens.get(1);
         switch(subCommand) {
             case "dump":
-                File dump = new File(console.getNodeServices().nodeDataDir + DUMP_NAME);
+                File dump = new File(console.getNodeServices().nodeDataDir, DUMP_NAME);
                 try (PrintWriter writer = new PrintWriter(new FileWriter(dump))) {
                     int cnt = MapDynamicsCollector.instance.dump(writer);
                     console.inform("Dumped " + cnt + " items to " + dump.getCanonicalPath());

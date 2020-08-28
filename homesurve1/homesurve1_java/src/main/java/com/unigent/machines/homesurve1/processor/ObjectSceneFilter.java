@@ -19,12 +19,12 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkState;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 
 /**
  * Home Surveillance Robot, POC 1
@@ -33,13 +33,14 @@ import static java.lang.Math.min;
  **/
 @AgentBaseProcessor(
         consumedData = @ConsumedDataFlow(dataType = ObjectScenePayload.class, localName = "scene_input"),
-        producedData = @ProducedDataFlow(dataType = ObjectScenePayload.class, localName = "scene_output")
+        producedData = @ProducedDataFlow(dataType = ObjectScenePayload.class, localName = "scene_output"),
+        description = "Eliminates pulsating, shivering and double objects from the scene"
 )
 public class ObjectSceneFilter extends ProcessorBase {
 
     private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-    private static final int TIME_BUCKET_MILLIS = 500;
+    private static final int TIME_BUCKET_MILLIS = 800;
     private static final int OBJECT_DECAY_MILLIS = 2000;
     private static final double DISTANCE_TOLERANCE_METERS = 0.3;
     private static final double AZIMUTH_TOLERANCE_DEGREES = 2.0;
@@ -58,33 +59,37 @@ public class ObjectSceneFilter extends ProcessorBase {
         long now = System.currentTimeMillis();
 
         // Clear expired objects
-        clearExpiredObjects(now);
+        boolean change = clearExpiredObjects(now);
 
         // Inspect new scene
-        boolean change = false;
+        int matchCount = 0;
         for(SceneObject sceneObject : incomingScene.getObjects()) {
             TrackedObject match = findTrackedObject(sceneObject);
             if(match == null) {
                 match = new TrackedObject(now, sceneObject);
                 this.trackedObjects.add(match);
+                log.info("scenefilter# Added object '{}' at {} deg, {} m", match.label, sceneObject.getAzimuthDegrees(), sceneObject.getDistanceMeters());
+            }
+            else {
+                matchCount ++;
             }
 
             change |= match.addData(now, sceneObject.getDistanceMeters(), sceneObject.getAzimuthDegrees());
         }
 
-        if(change) {
-            produceStateUpdate(createScene(incomingScene.getSourceImageTimestamp()), "scene_output");
-        }
-    }
+        log.info("scenefilter# Matched {} of {}. Change: {}. Tracking {} objects", matchCount, incomingScene.getObjects().size(), change, this.trackedObjects.size());
 
-    private ObjectScenePayload createScene(long timestamp) {
-        return new ObjectScenePayload(
-                this.trackedObjects.stream()
-                    .filter(TrackedObject::isMature)
-                    .map(TrackedObject::toSceneObject)
-                    .collect(Collectors.toList()),
-                timestamp
-        );
+        if(change) {
+            ObjectScenePayload resultScene = new ObjectScenePayload(
+                    this.trackedObjects.stream()
+                            .filter(TrackedObject::isMature)
+                            .map(TrackedObject::toSceneObject)
+                            .collect(Collectors.toList()),
+                    incomingScene.getSourceImageTimestamp()
+            );
+            log.info("scenefilter# Created scene with {} objects", resultScene.getObjects().size());
+            produceStateUpdate(resultScene, "scene_output");
+        }
     }
 
     private static class TrackedObject {
@@ -124,6 +129,8 @@ public class ObjectSceneFilter extends ProcessorBase {
 
             // Mature!
 
+            boolean change = false;
+
             // Cleanup
             Set<Measurement> toRemove = new HashSet<>();
             for(Measurement m : this.history) {
@@ -131,18 +138,11 @@ public class ObjectSceneFilter extends ProcessorBase {
                     toRemove.add(m);
                 }
             }
+
             this.history.removeAll(toRemove);
 
-            // Fits range?
-            boolean change = false;
-            if(!this.distance.fits(distance)) {
-                recalculateDistance();
-                change = true;
-            }
-            if(!this.azimuth.fits(azimuth)) {
-                recalculateAzimuth();
-                change = true;
-            }
+            recalculateDistance();
+            recalculateAzimuth();
 
             return change;
         }
@@ -184,6 +184,15 @@ public class ObjectSceneFilter extends ProcessorBase {
             return new SceneObject(classId, label, distance.value, azimuth.value);
         }
 
+
+        @Override
+        public String toString() {
+            return new StringJoiner(", ", TrackedObject.class.getSimpleName() + "[", "]")
+                    .add("label='" + label + "'")
+                    .add("distance=" + distance)
+                    .add("azimuth=" + azimuth)
+                    .toString();
+        }
     }
 
     private static class Measurement {
@@ -213,9 +222,18 @@ public class ObjectSceneFilter extends ProcessorBase {
         public boolean fits(double v) {
             return v >= valueMin && v <= valueMax;
         }
+
+        @Override
+        public String toString() {
+            return new StringJoiner(", ", RangeAndValue.class.getSimpleName() + "[", "]")
+                    .add("value=" + value)
+                    .add("valueMin=" + valueMin)
+                    .add("valueMax=" + valueMax)
+                    .toString();
+        }
     }
 
-    private synchronized void clearExpiredObjects(long now) {
+    private synchronized boolean clearExpiredObjects(long now) {
         long expiredBefore = now - OBJECT_DECAY_MILLIS;
         Set<TrackedObject> toRemove = new HashSet<>();
         this.trackedObjects.stream().filter(to -> to.lastSawAtMillis < expiredBefore).forEach(toRemove::add);
@@ -223,7 +241,10 @@ public class ObjectSceneFilter extends ProcessorBase {
         if(!toRemove.isEmpty()) {
             log.debug("Removing {} expired objects", toRemove.size());
             this.trackedObjects.removeAll(toRemove);
+            return true;
         }
+
+        return false;
     }
 
     @Nullable
@@ -231,8 +252,8 @@ public class ObjectSceneFilter extends ProcessorBase {
         return this.trackedObjects.stream()
                 .filter(to->
                         to.classId == object.getClassId() &&
-                        Maths.shortestDeltaDegrees(to.getCurrentOrLastAzimuth(), object.getAzimuthDegrees()) < AZIMUTH_TOLERANCE_DEGREES &&
-                        Math.abs(to.getCurrentOrLastDistance() - object.getDistanceMeters()) < DISTANCE_TOLERANCE_METERS
+                        abs(Maths.shortestDeltaDegrees(to.getCurrentOrLastAzimuth(), object.getAzimuthDegrees())) < AZIMUTH_TOLERANCE_DEGREES &&
+                        abs(to.getCurrentOrLastDistance() - object.getDistanceMeters()) < DISTANCE_TOLERANCE_METERS
                 )
                 .findFirst()
                 .orElse(null);

@@ -35,21 +35,21 @@ public class MapState {
 
     public static class MapObject implements Comparable<MapObject> {
 
-        private int classId;
+        private String objectId;
         private double azimuth;
         private double distance;
 
         public MapObject() {
         }
 
-        public MapObject(int classId, double azimuth, double distance) {
-            this.classId = classId;
+        public MapObject(String objectId, double azimuth, double distance) {
+            this.objectId = objectId;
             this.azimuth = azimuth;
             this.distance = distance;
         }
 
-        public void setClassId(int classId) {
-            this.classId = classId;
+        public void setObjectId(String objectId) {
+            this.objectId = objectId;
         }
 
         public void setAzimuth(double azimuth) {
@@ -60,8 +60,8 @@ public class MapState {
             this.distance = distance;
         }
 
-        public int getClassId() {
-            return classId;
+        public String getObjectId() {
+            return objectId;
         }
 
         public double getAzimuth() {
@@ -76,7 +76,7 @@ public class MapState {
         public int compareTo(MapObject o) {
             int r = Double.compare(this.azimuth, o.azimuth);
             if(r == 0) {
-                r = Integer.compare(this.classId, o.classId);
+                r = this.objectId.compareTo(o.objectId);
             }
             if(r == 0) {
                 r = Double.compare(this.distance, o.distance);
@@ -87,7 +87,7 @@ public class MapState {
         @Override
         public String toString() {
             return "MapObject{" +
-                    "classId=" + classId +
+                    "classId=" + objectId +
                     ", azimuth=" + azimuth +
                     ", distance=" + distance +
                     '}';

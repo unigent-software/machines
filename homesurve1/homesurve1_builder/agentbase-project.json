@@ -359,7 +359,7 @@
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "",
+      "description" : "Eliminates pulsating, shivering and double objects from the scene",
       "logicTech" : "Java",
       "processorClass" : "com.unigent.machines.homesurve1.processor.ObjectSceneFilter",
       "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",

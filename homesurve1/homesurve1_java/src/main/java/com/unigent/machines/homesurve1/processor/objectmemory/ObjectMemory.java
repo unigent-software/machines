@@ -192,6 +192,7 @@ public class ObjectMemory implements Initiatable {
             counter.setCounter(counter.getCounter() + 1);
             this.objectIdCounterRepo.update(counter);
         }
+        this.objectMemoryDb.commit();
         return counter.getCounter();
     }
 }

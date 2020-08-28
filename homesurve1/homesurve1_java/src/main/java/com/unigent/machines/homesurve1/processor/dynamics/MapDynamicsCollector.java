@@ -137,7 +137,7 @@ public class MapDynamicsCollector extends ProcessorBase {
 
         MapState nextState = new MapState(
                 scene.getObjects().stream()
-                        .map(detectedObject->new MapState.MapObject(detectedObject.getClassId(), detectedObject.getAzimuthDegrees(), detectedObject.getDistanceMeters()))
+                        .map(detectedObject->new MapState.MapObject(detectedObject.getObjectId(), detectedObject.getAzimuthDegrees(), detectedObject.getDistanceMeters()))
                         .sorted()
                         .collect(Collectors.toList())
         );
