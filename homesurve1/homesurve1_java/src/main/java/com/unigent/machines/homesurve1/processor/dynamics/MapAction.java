@@ -1,5 +1,7 @@
 package com.unigent.machines.homesurve1.processor.dynamics;
 
+import java.util.Objects;
+
 /**
  * Home Surveillance Robot, POC 1
  * Unigent Robotics, 2020
@@ -7,30 +9,40 @@ package com.unigent.machines.homesurve1.processor.dynamics;
  **/
 public class MapAction {
 
-    private double deltaGamma;
-    private double deltaX;
+    private int deltaGamma;
+    private int deltaX;
 
     public MapAction() {
     }
 
-    public MapAction(double deltaGamma, double deltaX) {
+    public MapAction(int deltaGamma, int deltaX) {
         this.deltaGamma = deltaGamma;
         this.deltaX = deltaX;
     }
 
-    public double getDeltaGamma() {
+    public int getDeltaGamma() {
         return deltaGamma;
     }
 
-    public double getDeltaX() {
+    public int getDeltaX() {
         return deltaX;
     }
 
     @Override
     public String toString() {
-        return "MapAction{" +
-                "deltaGamma=" + deltaGamma +
-                ", deltaX=" + deltaX +
-                '}';
+        return "{" + "dG=" + deltaGamma + ", dX=" + deltaX + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MapAction mapAction = (MapAction) o;
+        return mapAction.deltaGamma == deltaGamma && mapAction.deltaX == deltaX;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(deltaGamma, deltaX);
     }
 }

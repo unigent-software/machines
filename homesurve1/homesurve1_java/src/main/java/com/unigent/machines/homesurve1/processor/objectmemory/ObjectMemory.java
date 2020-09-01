@@ -5,13 +5,10 @@ import com.google.common.collect.Iterables;
 import com.unigent.agentbase.sdk.commons.Initiatable;
 import com.unigent.agentbase.sdk.commons.util.JSON;
 import com.unigent.agentbase.sdk.persistence.NitriteManager;
-import com.unigent.machines.homesurve1.processor.dynamics.MapStateTransition;
 import com.unigent.machines.homesurve1.state.RecognizedSceneObject;
 import com.unigent.machines.homesurve1.state.SceneObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.dizitart.no2.IndexOptions;
-import org.dizitart.no2.IndexType;
 import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.ObjectRepository;
 
@@ -22,7 +19,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.*;
-import static org.dizitart.no2.IndexOptions.indexOptions;
 import static org.dizitart.no2.objects.filters.ObjectFilters.*;
 
 public class ObjectMemory implements Initiatable {
@@ -44,16 +40,6 @@ public class ObjectMemory implements Initiatable {
         this.objectMemoryDb = nitriteManager.getNitrite("object_memory");
         this.objectRecordRepo = this.objectMemoryDb.getRepository(ObjectRecord.class);
         this.objectIdCounterRepo = this.objectMemoryDb.getRepository(ObjectIdCounter.class);
-
-        if(!this.objectRecordRepo.hasIndex("subjectClassId")) {
-            this.objectRecordRepo.createIndex("subjectClassId", indexOptions(IndexType.NonUnique));
-        }
-        if(!this.objectRecordRepo.hasIndex("subjectLabel")) {
-            this.objectRecordRepo.createIndex("subjectLabel", indexOptions(IndexType.NonUnique));
-        }
-        if(!this.objectRecordRepo.hasIndex("contextClassId")) {
-            this.objectRecordRepo.createIndex("contextClassId", indexOptions(IndexType.NonUnique));
-        }
     }
 
     @Override
@@ -115,7 +101,7 @@ public class ObjectMemory implements Initiatable {
         catch (Exception e) {
             throw new RuntimeException("Unable to dump: " + e.getMessage(), e);
         }
-        log.info("Dumped {} items", cnt);
+        log.info("objmemory# Dumped {} items", cnt);
         return cnt;
     }
 
@@ -125,10 +111,8 @@ public class ObjectMemory implements Initiatable {
         return new ArrayList<>(result);
     }
 
-    public List<String> findObjects() {
-        LinkedHashSet<String> result = new LinkedHashSet<>();
-        this.objectRecordRepo.find().forEach(objectRecord -> result.add(objectRecord.getSubjectObjectId()));
-        return new ArrayList<>(result);
+    public List<ObjectRecord> findObjects() {
+        return this.objectRecordRepo.find().toList();
     }
 
     private String saveNewSubject(SceneObject subject, Collection<SceneObject> contextObjects) {
@@ -144,6 +128,7 @@ public class ObjectMemory implements Initiatable {
                     gammaDegrees
             );
             this.objectRecordRepo.insert(newRecord);
+            log.info("objmemory# insert subj:{}, ctx:{}, dist:{}, ori:{}, ID:{}", newRecord.getSubjectClassId(), newRecord.getContextClassId(), newRecord.getDistance(), newRecord.getOrientation(), newObjectId);
         }
         this.objectMemoryDb.commit();
         return newObjectId;
@@ -168,7 +153,7 @@ public class ObjectMemory implements Initiatable {
 
     @Nullable
     private synchronized ObjectRecord findMatchingRecord(int subjectClassId, int contextClassId, int distance, int orientation) {
-        return this.objectRecordRepo
+        ObjectRecord result = this.objectRecordRepo
                 .find(
                     and(
                             eq("subjectClassId", subjectClassId),
@@ -180,6 +165,10 @@ public class ObjectMemory implements Initiatable {
                     )
                 )
                 .firstOrDefault();
+
+        log.info("objmemory# find subj:{}, ctx:{}, dist:{}, ori:{} -> {}", subjectClassId, contextClassId, distance, orientation, result == null ? "NONE" : result.getSubjectObjectId());
+
+        return result;
     }
 
     private synchronized int nextCounter(int classId) {

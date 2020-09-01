@@ -686,6 +686,10 @@
         "dataType" : "com.unigent.agentbase.library.core.state.StringPayload",
         "localName" : "target_label",
         "receiveUpdates" : false
+      }, {
+        "dataType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
+        "localName" : "recognized_scene",
+        "receiveUpdates" : false
       } ],
       "producedData" : [ ],
       "configDeclaration" : [ ],

@@ -1,5 +1,16 @@
 package com.unigent.machines.homesurve1.processor.objectmemory;
 
+import org.dizitart.no2.IndexType;
+import org.dizitart.no2.objects.Index;
+import org.dizitart.no2.objects.Indices;
+
+import java.util.StringJoiner;
+
+@Indices(value = {
+        @Index(value = "subjectClassId", type = IndexType.NonUnique),
+        @Index(value = "contextClassId", type = IndexType.NonUnique),
+        @Index(value = "subjectLabel", type = IndexType.NonUnique)
+})
 public class ObjectRecord {
 
     private String subjectObjectId; // <classId>-<#>
@@ -67,5 +78,17 @@ public class ObjectRecord {
 
     public void setSubjectLabel(String subjectLabel) {
         this.subjectLabel = subjectLabel;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", ObjectRecord.class.getSimpleName() + "[", "]")
+                .add("id='" + subjectObjectId + "'")
+                .add("subject=" + subjectClassId)
+                .add("label='" + subjectLabel + "'")
+                .add("context=" + contextClassId)
+                .add("distance=" + distance)
+                .add("orientation=" + orientation)
+                .toString();
     }
 }

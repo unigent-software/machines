@@ -1,6 +1,13 @@
 package com.unigent.machines.homesurve1.processor.dynamics;
 
+import org.dizitart.no2.IndexType;
+import org.dizitart.no2.objects.Index;
+import org.dizitart.no2.objects.Indices;
+
+import java.util.Arrays;
 import java.util.List;
+
+import static java.lang.Math.abs;
 
 /**
  * Home Surveillance Robot, POC 1
@@ -12,6 +19,10 @@ public class MapState {
     private List<MapObject> objects;
 
     public MapState() {
+    }
+
+    public MapState(MapObject ... objects) {
+        this(Arrays.asList(objects));
     }
 
     public MapState(List<MapObject> objects) {
@@ -26,23 +37,44 @@ public class MapState {
         this.objects = objects;
     }
 
-    @Override
-    public String toString() {
-        return "MapState{" +
-                "objects=" + objects +
-                '}';
+    public boolean matches(MapState other) {
+        for(MapObject thisObj : this.objects) {
+            if(other.objects.stream().anyMatch(otherObj->otherObj.isEquivalent(thisObj))) {
+                return true;
+            }
+        }
+        return false;
     }
 
+    public float match(MapState other) {
+        int total = this.objects.size() + other.objects.size();
+        int matching = 0;
+        for(MapObject thisObj : this.objects) {
+            if(other.objects.stream().anyMatch(otherObj->otherObj.isEquivalent(thisObj))) {
+                matching += 2;
+            }
+        }
+        return matching / (float) total;
+    }
+
+    @Override
+    public String toString() {
+        return "MapState{" + objects + '}';
+    }
+
+    @Indices(value = {
+            @Index(value = "objectId", type = IndexType.NonUnique),
+    })
     public static class MapObject implements Comparable<MapObject> {
 
         private String objectId;
-        private double azimuth;
-        private double distance;
+        private int azimuth;
+        private int distance;
 
         public MapObject() {
         }
 
-        public MapObject(String objectId, double azimuth, double distance) {
+        public MapObject(String objectId, int azimuth, int distance) {
             this.objectId = objectId;
             this.azimuth = azimuth;
             this.distance = distance;
@@ -52,11 +84,11 @@ public class MapState {
             this.objectId = objectId;
         }
 
-        public void setAzimuth(double azimuth) {
+        public void setAzimuth(int azimuth) {
             this.azimuth = azimuth;
         }
 
-        public void setDistance(double distance) {
+        public void setDistance(int distance) {
             this.distance = distance;
         }
 
@@ -64,11 +96,11 @@ public class MapState {
             return objectId;
         }
 
-        public double getAzimuth() {
+        public int getAzimuth() {
             return azimuth;
         }
 
-        public double getDistance() {
+        public int getDistance() {
             return distance;
         }
 
@@ -86,11 +118,15 @@ public class MapState {
 
         @Override
         public String toString() {
-            return "MapObject{" +
-                    "classId=" + objectId +
-                    ", azimuth=" + azimuth +
-                    ", distance=" + distance +
-                    '}';
+            return "{" + objectId + " @ " + azimuth + ", " + distance + '}';
+        }
+
+        public boolean isEquivalent(MapObject other) {
+            return
+                    this.objectId.equals(other.objectId) &&
+                    abs(this.azimuth - other.azimuth) < MapDynamicsCollector.DETECTABLE_AZIMUTH_CHANGE_DEGREES &&
+                    abs(this.distance - other.distance) < MapDynamicsCollector.DETECTABLE_MOTION_CHANGE_CM
+            ;
         }
     }
 

@@ -41,8 +41,14 @@ public class ObjectRecognizer extends ProcessorBase {
         ObjectScenePayload scenePayload = (ObjectScenePayload) stateUpdate.getPayload();
 
         int objectCount = scenePayload.getObjects().size();
+        if(objectCount == 0) {
+            log.debug("object_recognizer# Empty scene");
+            return;
+        }
+
         List<SceneObject> context = new ArrayList<>(objectCount - 1);
         List<RecognizedSceneObject> recognizedSceneObjects = new ArrayList<>(objectCount);
+        ObjectMemory objectMemory = InitializerProcessor.getInstance().getObjectMemory();
         for(int subjectIndex=0; subjectIndex<objectCount; subjectIndex++) {
             context.clear();
             SceneObject subject = null;
@@ -54,7 +60,9 @@ public class ObjectRecognizer extends ProcessorBase {
                     context.add(scenePayload.getObjects().get(j));
                 }
             }
-            ObjectMemory objectMemory = InitializerProcessor.getInstance().getObjectMemory();
+            if(context.isEmpty()) {
+                continue;
+            }
             RecognizedSceneObject object = objectMemory.recognize(Objects.requireNonNull(subject, "Subject is null"), context);
             if(object != null) {
                 recognizedSceneObjects.add(object);

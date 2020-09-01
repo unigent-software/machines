@@ -1,28 +1,23 @@
 package com.unigent.machines.homesurve1.processor.dynamics;
 
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.unigent.agentbase.library.core.state.TensorPayload;
 import com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading;
 import com.unigent.agentbase.sdk.commons.Config;
 import com.unigent.agentbase.sdk.commons.util.Dates;
-import com.unigent.agentbase.sdk.commons.util.JSON;
+import com.unigent.agentbase.sdk.commons.util.geometry.Geometry;
 import com.unigent.agentbase.sdk.controller.ConsoleHandle;
 import com.unigent.agentbase.sdk.node.NodeServices;
 import com.unigent.agentbase.sdk.processing.ProcessorBase;
 import com.unigent.agentbase.sdk.processing.metadata.AgentBaseProcessor;
 import com.unigent.agentbase.sdk.processing.metadata.ConsumedDataFlow;
 import com.unigent.agentbase.sdk.state.StateUpdate;
-import com.unigent.machines.homesurve1.state.ObjectScenePayload;
+import com.unigent.machines.homesurve1.InitializerProcessor;
 import com.unigent.machines.homesurve1.state.RecognizedObjectScenePayload;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.dizitart.no2.Nitrite;
-import org.dizitart.no2.objects.ObjectFilter;
-import org.dizitart.no2.objects.ObjectRepository;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.PrintWriter;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
 import java.util.Map;
@@ -62,25 +57,18 @@ public class MapDynamicsCollector extends ProcessorBase {
 
     private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-    private static final double DETECTABLE_AZIMUTH_CHANGE_DEGREES = 2.0;
-    private static final double DETECTABLE_MOTION_CHANGE_METERS = 0.05;
+    public static final int DETECTABLE_AZIMUTH_CHANGE_DEGREES = 2;
+    public static final int DETECTABLE_MOTION_CHANGE_CM = 5;
 
     private static final long TIME_RANGE_MILLIS = 80;
     private static final URI TOPIC_XYZ = URI.create("sensor/orientation/bno055");
     private static final URI TOPIC_LINEAR_MOTION = URI.create("linear_motion");
 
     private MapState previousState = null;
-
     private Double previousAzimuth;
-
-    private Nitrite mapDynamicsDb;
-    private ObjectRepository<MapStateTransition> mapStateTransitionRepo;
-
-    static MapDynamicsCollector instance;
 
     public MapDynamicsCollector(String name) {
         super(name);
-        instance = this;
     }
 
     @Override
@@ -92,14 +80,11 @@ public class MapDynamicsCollector extends ProcessorBase {
     @Override
     public void initiate() {
         super.initiate();
-        this.mapDynamicsDb = nodeServices.nitriteManager.getNitrite("map_dynamics");
-        this.mapStateTransitionRepo = this.mapDynamicsDb.getRepository(MapStateTransition.class);
         nodeServices.stateBus.ensureTopic(TOPIC_XYZ);
     }
 
     @Override
     public void shutdown() {
-        this.mapDynamicsDb.close();
         super.shutdown();
     }
 
@@ -124,7 +109,7 @@ public class MapDynamicsCollector extends ProcessorBase {
                 .orElseThrow(()-> new RuntimeException("No related XYZ orientation reading between " + Dates.toLocalTime(fromMillis) + " and " + Dates.toLocalTime(toMillis)));
 
         if(previousAzimuth == null) {
-            previousAzimuth = relatedOrientationReading.getAzimuth();
+            previousAzimuth = relatedOrientationReading.getX();
             return;
         }
 
@@ -135,58 +120,49 @@ public class MapDynamicsCollector extends ProcessorBase {
                 .findFirst()
                 .orElse(null);
 
-        MapState nextState = new MapState(
-                scene.getObjects().stream()
-                        .map(detectedObject->new MapState.MapObject(detectedObject.getObjectId(), detectedObject.getAzimuthDegrees(), detectedObject.getDistanceMeters()))
-                        .sorted()
-                        .collect(Collectors.toList())
-        );
-
+        MapState nextState = sceneToMapState(scene);
         log.info("dynamics# Got state {}", nextState);
 
-        if(previousState != null) {
-            double deltaX = relatedLinearMotionReading == null ? 0.0 : relatedLinearMotionReading.toVector()[0];
-            if(abs(deltaX) < DETECTABLE_MOTION_CHANGE_METERS) {
-                deltaX = 0.0;
+        if(!nextState.getObjects().isEmpty() && previousState != null && !previousState.getObjects().isEmpty()) {
+            int deltaX = distanceMetersToCm(relatedLinearMotionReading == null ? 0.0 : relatedLinearMotionReading.toVector()[0]);
+            if(abs(deltaX) < DETECTABLE_MOTION_CHANGE_CM) {
+                deltaX = 0;
             }
 
-            double deltaAzimuth = relatedOrientationReading.getAzimuth() - previousAzimuth;
+            int deltaAzimuth = azimuthToIntDegrees(Geometry.diffAzimuthDegrees(relatedOrientationReading.getX(), previousAzimuth));
             if(abs(deltaAzimuth) < DETECTABLE_AZIMUTH_CHANGE_DEGREES) {
-                deltaAzimuth = 0.0;
+                deltaAzimuth = 0;
             }
 
-            MapAction action = new MapAction(deltaAzimuth, deltaX);
-            MapStateTransition stateTransition = new MapStateTransition(previousState, action, nextState);
-
-            this.mapStateTransitionRepo.insert(stateTransition);
-            this.mapDynamicsDb.commit();
+            if(deltaX != 0 || deltaAzimuth != 0) {
+                // Store the transition!
+                MapAction action = new MapAction(deltaAzimuth, deltaX);
+                MapStateTransition stateTransition = new MapStateTransition(previousState, action, nextState);
+                InitializerProcessor.getInstance().getMapDynamicsMemory().store(stateTransition);
+            }
         }
 
         previousState = nextState;
     }
 
-    long getBufferSize() {
-        return this.mapStateTransitionRepo.size();
+    public static MapState sceneToMapState(RecognizedObjectScenePayload scene) {
+        return new MapState(
+                scene.getObjects().stream()
+                        .map(detectedObject->new MapState.MapObject(
+                                detectedObject.getObjectId(),
+                                azimuthToIntDegrees(detectedObject.getAzimuthDegrees()),
+                                distanceMetersToCm(detectedObject.getDistanceMeters())
+                        ))
+                        .sorted()
+                        .collect(Collectors.toList())
+        );
     }
 
-    void clearBuffer() {
-        this.mapStateTransitionRepo.drop();
-        this.mapStateTransitionRepo = this.mapDynamicsDb.getRepository(MapStateTransition.class);
+    public static int azimuthToIntDegrees(double azimuth) {
+        return (int) Math.round(azimuth);
     }
 
-    int dump(PrintWriter output) {
-        int cnt = 0;
-        try {
-            ObjectWriter objectWriter = JSON.mapper.writerWithDefaultPrettyPrinter();
-            for(MapStateTransition stateTransition : this.mapStateTransitionRepo.find()) {
-                output.println(objectWriter.writeValueAsString(stateTransition));
-                cnt ++;
-            }
-        }
-        catch (Exception e) {
-            throw new RuntimeException("Unable to dump: " + e.getMessage(), e);
-        }
-        log.info("Dumped {} items", cnt);
-        return cnt;
+    public static int distanceMetersToCm(double distanceMeters) {
+        return (int) Math.round(distanceMeters * 100);
     }
 }

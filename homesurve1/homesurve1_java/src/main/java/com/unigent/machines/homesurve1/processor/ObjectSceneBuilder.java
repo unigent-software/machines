@@ -95,7 +95,7 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
         DetectedObjects detectedObjects = detectedObjectsJson.toObject(DetectedObjects.class);
         List<SceneObject> sceneObjects = new ArrayList<>(detectedObjects.getBoxes().size());
 
-        double centerAzimuth = orientation.getAzimuth();
+        double centerAzimuth = orientation.getX();
         double leftEdgeAzimuth = addAzimuthDegrees(centerAzimuth, -(fullWidth / 2.0) * this.horizontalDegreesPerPixel);
         double [][] depthData  = depthImageTensor.toMatrix();
 
