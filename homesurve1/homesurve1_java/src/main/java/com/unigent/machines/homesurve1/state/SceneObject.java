@@ -9,18 +9,19 @@ public class SceneObject {
 
     private int classId;
     private String label;
-    private double distanceMeters;
+    private int distanceMM;
     private double azimuthDegrees; // 0-360
+    private double widthDegrees;
 
     public SceneObject() {
-
     }
 
-    public SceneObject(int classId, String label, double distanceMeters, double azimuthDegrees) {
+    public SceneObject(int classId, String label, int distanceMM, double azimuthDegrees, double widthDegrees) {
         this.classId = classId;
         this.label = label;
-        this.distanceMeters = distanceMeters;
+        this.distanceMM = distanceMM;
         this.azimuthDegrees = azimuthDegrees;
+        this.widthDegrees = widthDegrees;
     }
 
     public int getClassId() {
@@ -39,12 +40,12 @@ public class SceneObject {
         this.label = label;
     }
 
-    public double getDistanceMeters() {
-        return distanceMeters;
+    public int getDistanceMM() {
+        return distanceMM;
     }
 
-    public void setDistanceMeters(double distanceMeters) {
-        this.distanceMeters = distanceMeters;
+    public void setDistanceMM(int distanceMM) {
+        this.distanceMM = distanceMM;
     }
 
     public double getAzimuthDegrees() {
@@ -55,13 +56,22 @@ public class SceneObject {
         this.azimuthDegrees = azimuthDegrees;
     }
 
+    public double getWidthDegrees() {
+        return widthDegrees;
+    }
+
+    public void setWidthDegrees(double widthDegrees) {
+        this.widthDegrees = widthDegrees;
+    }
+
     @Override
     public String toString() {
         return "SceneObject{" +
                 "classId='" + classId + '\'' +
                 ", label='" + label + '\'' +
-                ", distanceMeters=" + distanceMeters +
+                ", distanceMM=" + distanceMM +
                 ", azimuthDegrees=" + azimuthDegrees +
+                ", widthDegrees=" + widthDegrees +
                 '}';
     }
 }

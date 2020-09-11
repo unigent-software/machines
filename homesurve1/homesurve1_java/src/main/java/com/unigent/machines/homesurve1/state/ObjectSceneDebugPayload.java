@@ -5,7 +5,7 @@ import com.unigent.agentbase.sdk.commons.util.Images;
 import com.unigent.agentbase.sdk.serialization.JsonSerializerBase;
 import com.unigent.agentbase.sdk.state.StatePayload;
 import com.unigent.agentbase.sdk.state.metadata.AgentBaseState;
-import com.unigent.machines.homesurve1.processor.ObjectSceneBuilder;
+import com.unigent.machines.homesurve1.processor.SceneBuilder;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -33,16 +33,16 @@ public class ObjectSceneDebugPayload implements StatePayload, RepresentableAsIma
     @Override
     public List<BufferedImage> getImageRepresentation() {
         // Depth (cropped to 480 x 480)
-        int depthImageSize = ObjectSceneBuilder.fullHeight;
+        int depthImageSize = SceneBuilder.fullHeight;
         BufferedImage depthImage = new BufferedImage(depthImageSize, depthImageSize, BufferedImage.TYPE_INT_RGB);
         for(int r = 0; r < depthImageSize; r++) {
             for(int c = 0; c < depthImageSize; c++) {
-                depthImage.setRGB(c, r, Color.getHSBColor((float) (depthData[r][c + ObjectSceneBuilder.halfWidth] / 5.0), 0.8f, 0.8f).getRGB());
+                depthImage.setRGB(c, r, Color.getHSBColor((float) (depthData[r][c + SceneBuilder.halfWidth] / 5.0), 0.8f, 0.8f).getRGB());
             }
         }
 
         // Scale image to 416 x 416
-        BufferedImage depthImage416 = Images.resize(depthImage, ObjectSceneBuilder.size, ObjectSceneBuilder.size);
+        BufferedImage depthImage416 = Images.resize(depthImage, SceneBuilder.size, SceneBuilder.size);
 
         // Boxes
         Graphics2D g = (Graphics2D) depthImage416.getGraphics();

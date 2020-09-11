@@ -1,4 +1,4 @@
-package com.unigent.machines.homesurve1.processor.dynamics;
+package com.unigent.machines.homesurve1.processor.map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.unigent.agentbase.sdk.commons.util.Ids;

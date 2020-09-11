@@ -1,7 +1,6 @@
-package com.unigent.machines.homesurve1.processor.dynamics;
+package com.unigent.machines.homesurve1.processor.map;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.google.common.collect.Streams;
 import com.unigent.agentbase.sdk.commons.Initiatable;
 import com.unigent.agentbase.sdk.commons.util.JSON;
 import com.unigent.agentbase.sdk.commons.util.geometry.Geometry;
@@ -14,11 +13,10 @@ import org.dizitart.no2.objects.ObjectRepository;
 import java.io.PrintWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector.DETECTABLE_AZIMUTH_CHANGE_DEGREES;
-import static com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector.DETECTABLE_MOTION_CHANGE_CM;
+import static com.unigent.machines.homesurve1.processor.map.MapDynamicsCollector.DETECTABLE_AZIMUTH_CHANGE_DEGREES;
+import static com.unigent.machines.homesurve1.processor.map.MapDynamicsCollector.DETECTABLE_MOTION_CHANGE_CM;
 import static org.dizitart.no2.objects.filters.ObjectFilters.*;
 
 /**

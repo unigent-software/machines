@@ -1,4 +1,4 @@
-package com.unigent.machines.homesurve1.processor.dynamics;
+package com.unigent.machines.homesurve1.processor.map;
 
 import com.unigent.agentbase.library.core.state.TensorPayload;
 import com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading;
@@ -7,11 +7,11 @@ import com.unigent.agentbase.sdk.commons.util.Dates;
 import com.unigent.agentbase.sdk.commons.util.geometry.Geometry;
 import com.unigent.agentbase.sdk.controller.ConsoleHandle;
 import com.unigent.agentbase.sdk.node.NodeServices;
-import com.unigent.agentbase.sdk.processing.ProcessorBase;
 import com.unigent.agentbase.sdk.processing.metadata.AgentBaseProcessor;
 import com.unigent.agentbase.sdk.processing.metadata.ConsumedDataFlow;
 import com.unigent.agentbase.sdk.state.StateUpdate;
 import com.unigent.machines.homesurve1.InitializerProcessor;
+import com.unigent.machines.homesurve1.processor.BodyMotionAwareProcessorBase;
 import com.unigent.machines.homesurve1.state.RecognizedObjectScenePayload;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,16 +53,13 @@ import static java.lang.Math.abs;
                 )
         }
 )
-public class MapDynamicsCollector extends ProcessorBase {
+public class MapDynamicsCollector extends BodyMotionAwareProcessorBase {
 
     private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
     public static final int DETECTABLE_AZIMUTH_CHANGE_DEGREES = 2;
     public static final int DETECTABLE_MOTION_CHANGE_CM = 5;
 
-    private static final long TIME_RANGE_MILLIS = 80;
-    private static final URI TOPIC_XYZ = URI.create("sensor/orientation/bno055");
-    private static final URI TOPIC_LINEAR_MOTION = URI.create("linear_motion");
 
     private MapState previousState = null;
     private Double previousAzimuth;
@@ -78,17 +75,6 @@ public class MapDynamicsCollector extends ProcessorBase {
     }
 
     @Override
-    public void initiate() {
-        super.initiate();
-        nodeServices.stateBus.ensureTopic(TOPIC_XYZ);
-    }
-
-    @Override
-    public void shutdown() {
-        super.shutdown();
-    }
-
-    @Override
     public void onStateUpdate(@Nonnull StateUpdate stateUpdate, @Nonnull URI sourceTopic, @Nullable String localBinding) {
 
         checkArgument("recognized_scene".equals(localBinding), localBinding);
@@ -98,38 +84,23 @@ public class MapDynamicsCollector extends ProcessorBase {
 
         log.info("dynamics# Got scene with {} objects at {}", scene.getObjects().size(), Dates.toLocalTime(sourceImageTimestamp));
 
-        long fromMillis = sourceImageTimestamp - TIME_RANGE_MILLIS;
-        long toMillis = sourceImageTimestamp + TIME_RANGE_MILLIS;
-
-        XYZOrientationReading relatedOrientationReading = nodeServices.stateBus.ensureTopic(TOPIC_XYZ)
-                .getData(fromMillis, toMillis)
-                .stream()
-                .map(update->(XYZOrientationReading) update.getPayload())
-                .findFirst()
-                .orElseThrow(()-> new RuntimeException("No related XYZ orientation reading between " + Dates.toLocalTime(fromMillis) + " and " + Dates.toLocalTime(toMillis)));
+        double newAzimuth = getAzimuth(sourceImageTimestamp);
 
         if(previousAzimuth == null) {
-            previousAzimuth = relatedOrientationReading.getX();
+            previousAzimuth = newAzimuth;
             return;
         }
-
-        TensorPayload relatedLinearMotionReading = nodeServices.stateBus.ensureTopic(TOPIC_LINEAR_MOTION)
-                .getData(sourceImageTimestamp - TIME_RANGE_MILLIS, sourceImageTimestamp + TIME_RANGE_MILLIS)
-                .stream()
-                .map(update->(TensorPayload) update.getPayload())
-                .findFirst()
-                .orElse(null);
 
         MapState nextState = sceneToMapState(scene);
         log.info("dynamics# Got state {}", nextState);
 
         if(!nextState.getObjects().isEmpty() && previousState != null && !previousState.getObjects().isEmpty()) {
-            int deltaX = distanceMetersToCm(relatedLinearMotionReading == null ? 0.0 : relatedLinearMotionReading.toVector()[0]);
+            int deltaX = getLinearMotionXcm(sourceImageTimestamp);
             if(abs(deltaX) < DETECTABLE_MOTION_CHANGE_CM) {
                 deltaX = 0;
             }
 
-            int deltaAzimuth = azimuthToIntDegrees(Geometry.diffAzimuthDegrees(relatedOrientationReading.getX(), previousAzimuth));
+            int deltaAzimuth = azimuthToIntDegrees(Geometry.diffAzimuthDegrees(newAzimuth, previousAzimuth));
             if(abs(deltaAzimuth) < DETECTABLE_AZIMUTH_CHANGE_DEGREES) {
                 deltaAzimuth = 0;
             }
@@ -143,7 +114,9 @@ public class MapDynamicsCollector extends ProcessorBase {
         }
 
         previousState = nextState;
+        previousAzimuth = newAzimuth;
     }
+
 
     public static MapState sceneToMapState(RecognizedObjectScenePayload scene) {
         return new MapState(
@@ -151,7 +124,7 @@ public class MapDynamicsCollector extends ProcessorBase {
                         .map(detectedObject->new MapState.MapObject(
                                 detectedObject.getObjectId(),
                                 azimuthToIntDegrees(detectedObject.getAzimuthDegrees()),
-                                distanceMetersToCm(detectedObject.getDistanceMeters())
+                                distanceMetersToCm(detectedObject.getDistanceMM())
                         ))
                         .sorted()
                         .collect(Collectors.toList())

@@ -11,10 +11,10 @@ import com.unigent.agentbase.sdk.processing.metadata.DiscreteActionInfo;
 import com.unigent.agentbase.sdk.rl.DiscreteAction;
 import com.unigent.agentbase.sdk.state.StateUpdate;
 import com.unigent.machines.homesurve1.InitializerProcessor;
-import com.unigent.machines.homesurve1.processor.dynamics.MapAction;
-import com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsMemory;
-import com.unigent.machines.homesurve1.processor.dynamics.MapState;
-import com.unigent.machines.homesurve1.processor.dynamics.MapStateTransition;
+import com.unigent.machines.homesurve1.processor.map.MapAction;
+import com.unigent.machines.homesurve1.processor.map.MapDynamicsMemory;
+import com.unigent.machines.homesurve1.processor.map.MapState;
+import com.unigent.machines.homesurve1.processor.map.MapStateTransition;
 import com.unigent.machines.homesurve1.processor.objectmemory.ObjectMemory;
 import com.unigent.machines.homesurve1.state.ObjectScenePayload;
 import com.unigent.machines.homesurve1.state.RecognizedObjectScenePayload;
@@ -28,7 +28,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector.sceneToMapState;
+import static com.unigent.machines.homesurve1.processor.map.MapDynamicsCollector.sceneToMapState;
 
 /**
  * Home Surveillance Robot, POC 1

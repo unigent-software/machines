@@ -10,11 +10,11 @@ public class RecognizedSceneObject extends SceneObject {
     }
 
     public RecognizedSceneObject(SceneObject sceneObject, String objectId) {
-        this(sceneObject.getClassId(), sceneObject.getLabel(), sceneObject.getDistanceMeters(), sceneObject.getAzimuthDegrees(), objectId);
+        this(sceneObject.getClassId(), sceneObject.getLabel(), sceneObject.getDistanceMM(), sceneObject.getAzimuthDegrees(), sceneObject.getWidthDegrees(), objectId);
     }
 
-    public RecognizedSceneObject(int classId, String label, double distanceMeters, double azimuthDegrees, String objectId) {
-        super(classId, label, distanceMeters, azimuthDegrees);
+    public RecognizedSceneObject(int classId, String label, int distanceMM, double azimuthDegrees, double widthDegrees, String objectId) {
+        super(classId, label, distanceMM, azimuthDegrees, widthDegrees);
         this.objectId = objectId;
     }
 

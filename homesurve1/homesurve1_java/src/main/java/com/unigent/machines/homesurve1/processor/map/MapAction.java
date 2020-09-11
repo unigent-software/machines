@@ -1,4 +1,4 @@
-package com.unigent.machines.homesurve1.processor.dynamics;
+package com.unigent.machines.homesurve1.processor.map;
 
 import java.util.Objects;
 

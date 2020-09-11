@@ -1,14 +1,12 @@
 package com.unigent.machines.homesurve1.processor.controller;
 
-import com.unigent.machines.homesurve1.processor.dynamics.MapAction;
-import com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsMemory;
-import com.unigent.machines.homesurve1.processor.dynamics.MapState;
-import com.unigent.machines.homesurve1.processor.dynamics.MapStateTransition;
+import com.unigent.machines.homesurve1.processor.map.MapAction;
+import com.unigent.machines.homesurve1.processor.map.MapDynamicsMemory;
+import com.unigent.machines.homesurve1.processor.map.MapState;
+import com.unigent.machines.homesurve1.processor.map.MapStateTransition;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.Collections.emptyList;

@@ -1,4 +1,4 @@
-package com.unigent.machines.homesurve1.processor.dynamics;
+package com.unigent.machines.homesurve1.processor.map;
 
 import org.dizitart.no2.IndexType;
 import org.dizitart.no2.objects.Index;

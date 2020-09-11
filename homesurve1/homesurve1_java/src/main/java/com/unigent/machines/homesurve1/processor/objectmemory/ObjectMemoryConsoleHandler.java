@@ -2,7 +2,6 @@ package com.unigent.machines.homesurve1.processor.objectmemory;
 
 import com.google.common.base.Joiner;
 import com.unigent.agentbase.sdk.node.ConsoleCommandHandlerBase;
-import com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector;
 
 import java.io.File;
 import java.io.FileWriter;

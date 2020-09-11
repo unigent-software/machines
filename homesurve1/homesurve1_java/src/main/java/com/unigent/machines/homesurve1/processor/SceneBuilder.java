@@ -4,9 +4,6 @@ import com.unigent.agentbase.library.core.state.JsonPayload;
 import com.unigent.agentbase.library.core.state.TensorPayload;
 import com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading;
 import com.unigent.agentbase.sdk.commons.Config;
-import com.unigent.agentbase.sdk.commons.util.Mean;
-import com.unigent.agentbase.sdk.commons.util.Tensors;
-import com.unigent.agentbase.sdk.commons.util.geometry.Geometry;
 import com.unigent.agentbase.sdk.controller.ConsoleHandle;
 import com.unigent.agentbase.sdk.node.NodeServices;
 import com.unigent.agentbase.sdk.processing.InputCollectingProcessorBase;
@@ -14,6 +11,7 @@ import com.unigent.agentbase.sdk.processing.metadata.AgentBaseProcessor;
 import com.unigent.agentbase.sdk.processing.metadata.ConsumedDataFlow;
 import com.unigent.agentbase.sdk.processing.metadata.ProcessorConfigProperty;
 import com.unigent.agentbase.sdk.processing.metadata.ProducedDataFlow;
+import com.unigent.machines.homesurve1.MiscUtils;
 import com.unigent.machines.homesurve1.state.DetectedObjects;
 import com.unigent.machines.homesurve1.state.ObjectSceneDebugPayload;
 import com.unigent.machines.homesurve1.state.ObjectScenePayload;
@@ -22,10 +20,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.invoke.MethodHandles;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.unigent.agentbase.sdk.commons.util.geometry.Geometry.addAzimuthDegrees;
 import static java.lang.Math.max;
@@ -53,7 +51,7 @@ import static java.lang.Math.min;
                 @ProcessorConfigProperty(name = "camera.fov.horizontal", required = true)
         }
 )
-public class ObjectSceneBuilder extends InputCollectingProcessorBase {
+public class SceneBuilder extends InputCollectingProcessorBase {
 
     private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -72,7 +70,7 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
     private double horizontalDegreesPerPixel;
     private boolean debugMode;
 
-    public ObjectSceneBuilder(String name) {
+    public SceneBuilder(String name) {
         super(name, FreshPayloadPolicy.Replace);
     }
 
@@ -114,16 +112,26 @@ public class ObjectSceneBuilder extends InputCollectingProcessorBase {
             double objectAzimuth = addAzimuthDegrees(leftEdgeAzimuth, centerX * this.horizontalDegreesPerPixel);
 
             // Distance
-            Mean depthMean = new Mean();
+            SortedSet<Integer> sortedDepthMM = new TreeSet<>();
             int depthBoxStartY = Double.valueOf(boxY * ratio).intValue();
             int depthBoxStartX = Double.valueOf(boxX * ratio + halfWidth).intValue(); // extract depth information from full size depth frame (crop and scale)
-            for(int r=depthBoxStartY ; r<min(fullHeight - 1, depthBoxStartY + boxHeight); r++) {
-                for(int c=depthBoxStartX; c<min(fullWidth - 1, depthBoxStartX + boxWidth); c++) {
-                    depthMean.increment(depthData[r][c]);
+            for(int r=depthBoxStartY ; r<min(fullHeight - 1, depthBoxStartY + boxHeight); r+=2) {
+                for(int c=depthBoxStartX; c<min(fullWidth - 1, depthBoxStartX + boxWidth); c+=2) {
+                    sortedDepthMM.add(MiscUtils.distanceMM(depthData[r][c]));
                 }
             }
-            double depth = depthMean.getValue();
-            sceneObjects.add(new SceneObject(classId, label, depth, objectAzimuth));
+            int valuesToTake = sortedDepthMM.size() / 5; // take 1/5th number of smallest distances
+            BigDecimal sumDistance = BigDecimal.ZERO;
+            Iterator<Integer> depthIter = sortedDepthMM.iterator();
+            for(int d=0; d<valuesToTake; d++) {
+                sumDistance = sumDistance.add(BigDecimal.valueOf(depthIter.next()));
+            }
+            int depthMM = sumDistance.divide(BigDecimal.valueOf(valuesToTake), RoundingMode.FLOOR).intValue();
+
+            // Angular width
+            double objectAngularWidth = boxWidth * this.horizontalDegreesPerPixel;
+
+            sceneObjects.add(new SceneObject(classId, label, depthMM, objectAzimuth, objectAngularWidth));
         }
 
         produceStateUpdate(new ObjectScenePayload(sceneObjects, detectedObjects.getSourceImageTimestamp()), "scene");

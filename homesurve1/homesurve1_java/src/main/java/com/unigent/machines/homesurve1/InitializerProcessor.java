@@ -5,8 +5,7 @@ import com.unigent.agentbase.sdk.controller.ConsoleHandle;
 import com.unigent.agentbase.sdk.node.NodeServices;
 import com.unigent.agentbase.sdk.processing.ProcessorBase;
 import com.unigent.agentbase.sdk.processing.metadata.AgentBaseProcessor;
-import com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector;
-import com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsMemory;
+import com.unigent.machines.homesurve1.processor.map.MapDynamicsMemory;
 import com.unigent.machines.homesurve1.processor.objectmemory.ObjectMemory;
 import com.unigent.machines.homesurve1.processor.objectmemory.ObjectMemoryConsoleHandler;
 

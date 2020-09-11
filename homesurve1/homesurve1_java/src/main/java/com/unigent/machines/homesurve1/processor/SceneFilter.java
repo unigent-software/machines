@@ -16,10 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,18 +33,18 @@ import static java.lang.Math.*;
         producedData = @ProducedDataFlow(dataType = ObjectScenePayload.class, localName = "scene_output"),
         description = "Eliminates pulsating, shivering and double objects from the scene"
 )
-public class ObjectSceneFilter extends ProcessorBase {
+public class SceneFilter extends ProcessorBase {
 
     private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final int TIME_BUCKET_MILLIS = 800;
-    private static final int OBJECT_DECAY_MILLIS = 2000;
+    private static final int OBJECT_DECAY_MILLIS = 1800;
     private static final double DISTANCE_TOLERANCE_METERS = 0.3;
     private static final double AZIMUTH_TOLERANCE_DEGREES = 2.0;
 
     private final Set<TrackedObject> trackedObjects = new HashSet<>();
 
-    public ObjectSceneFilter(String name) {
+    public SceneFilter(String name) {
         super(name);
     }
 
@@ -63,18 +60,18 @@ public class ObjectSceneFilter extends ProcessorBase {
 
         // Inspect new scene
         int matchCount = 0;
-        for(SceneObject sceneObject : incomingScene.getObjects()) {
+        for(SceneObject sceneObject : filterOverlaps(incomingScene.getObjects())) {
             TrackedObject match = findTrackedObject(sceneObject);
             if(match == null) {
                 match = new TrackedObject(now, sceneObject);
                 this.trackedObjects.add(match);
-                log.info("scenefilter# Added object '{}' at {} deg, {} m", match.label, sceneObject.getAzimuthDegrees(), sceneObject.getDistanceMeters());
+                log.info("scenefilter# Added object '{}' at {} deg, {} m", match.label, sceneObject.getAzimuthDegrees(), sceneObject.getDistanceMM());
             }
             else {
                 matchCount ++;
             }
 
-            change |= match.addData(now, sceneObject.getDistanceMeters(), sceneObject.getAzimuthDegrees());
+            change |= match.addData(now, sceneObject);
         }
 
         log.info("scenefilter# Matched {} of {}. Change: {}. Tracking {} objects", matchCount, incomingScene.getObjects().size(), change, this.trackedObjects.size());
@@ -92,6 +89,11 @@ public class ObjectSceneFilter extends ProcessorBase {
         }
     }
 
+    // TODO
+    private List<SceneObject> filterOverlaps(Collection<SceneObject> sceneObjects) {
+        return new ArrayList<>(sceneObjects);
+    }
+
     private static class TrackedObject {
 
         long lastSawAtMillis;
@@ -101,6 +103,7 @@ public class ObjectSceneFilter extends ProcessorBase {
         boolean mature;
         RangeAndValue distance;
         RangeAndValue azimuth;
+        double widthDegrees;
 
         LinkedList<Measurement> history = new LinkedList<>();
 
@@ -108,11 +111,12 @@ public class ObjectSceneFilter extends ProcessorBase {
             this.lastSawAtMillis = lastSawAtMillis;
             this.classId = sceneObject.getClassId();
             this.label = sceneObject.getLabel();
+            this.widthDegrees = sceneObject.getWidthDegrees();
         }
 
-        public boolean addData(long now, double distance, double azimuth) {
+        public boolean addData(long now, SceneObject sceneObject) {
             this.lastSawAtMillis = now;
-            this.history.add(new Measurement(now, distance, azimuth));
+            this.history.add(new Measurement(now, sceneObject.getDistanceMM(), sceneObject.getAzimuthDegrees()));
 
             // Still maturing?
             if(!mature) {
@@ -143,6 +147,7 @@ public class ObjectSceneFilter extends ProcessorBase {
 
             recalculateDistance();
             recalculateAzimuth();
+            this.widthDegrees = Math.max(this.widthDegrees, sceneObject.getWidthDegrees());
 
             return change;
         }
@@ -181,7 +186,7 @@ public class ObjectSceneFilter extends ProcessorBase {
         }
 
         public SceneObject toSceneObject() {
-            return new SceneObject(classId, label, distance.value, azimuth.value);
+            return new SceneObject(classId, label, (int) Math.round(distance.value), azimuth.value, widthDegrees);
         }
 
 
@@ -253,7 +258,7 @@ public class ObjectSceneFilter extends ProcessorBase {
                 .filter(to->
                         to.classId == object.getClassId() &&
                         abs(Maths.shortestDeltaDegrees(to.getCurrentOrLastAzimuth(), object.getAzimuthDegrees())) < AZIMUTH_TOLERANCE_DEGREES &&
-                        abs(to.getCurrentOrLastDistance() - object.getDistanceMeters()) < DISTANCE_TOLERANCE_METERS
+                        abs(to.getCurrentOrLastDistance() - object.getDistanceMM()) < DISTANCE_TOLERANCE_METERS
                 )
                 .findFirst()
                 .orElse(null);

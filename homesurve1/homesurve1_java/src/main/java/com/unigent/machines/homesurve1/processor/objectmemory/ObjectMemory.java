@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import com.unigent.agentbase.sdk.commons.Initiatable;
 import com.unigent.agentbase.sdk.commons.util.JSON;
 import com.unigent.agentbase.sdk.persistence.NitriteManager;
+import com.unigent.machines.homesurve1.MiscUtils;
 import com.unigent.machines.homesurve1.state.RecognizedSceneObject;
 import com.unigent.machines.homesurve1.state.SceneObject;
 import org.apache.logging.log4j.LogManager;
@@ -51,7 +52,7 @@ public class ObjectMemory implements Initiatable {
     private static final int ORIENTATION_PRECISION_DEGREES = 2;
 
     @Nullable
-    public RecognizedSceneObject recognize(SceneObject subject, Collection<SceneObject> contextObjects) {
+    public RecognizedSceneObject recognize(SceneObject subject, Collection<SceneObject> contextObjects, @Nullable RecognizedSceneObject expectation) {
 
         log.info("objmemory# Recognize {} in {}", subject.getLabel(), contextObjects.stream().map(SceneObject::getLabel).collect(Collectors.toList()));
 
@@ -72,8 +73,15 @@ public class ObjectMemory implements Initiatable {
 
         String recognizedObjectId;
         if(idMatches.isEmpty()) {
-            // No matches -> save as a new object
-            recognizedObjectId = saveNewSubject(subject, contextObjects);
+            // No matches
+            if(expectation != null) {
+                // We have a prediction - use that
+                recognizedObjectId = expectation.getObjectId();
+            }
+            else {
+                // Save a new object
+                recognizedObjectId = saveNewSubject(subject, contextObjects);
+            }
         }
         else {
             // Vote for best match
@@ -140,16 +148,14 @@ public class ObjectMemory implements Initiatable {
 
     // a^2 = b^2 + c^2 - 2*b*c*cos(A)
     private static int distanceMM(SceneObject a, SceneObject b, int gammaDegrees) {
-        return (int) round(
+        return (int) Math.round(
                 sqrt(
-                        a.getDistanceMeters() * a.getDistanceMeters() +
-                        b.getDistanceMeters() * b.getDistanceMeters() -
-                        2 * a.getDistanceMeters() * b.getDistanceMeters() * cos(toRadians(gammaDegrees))
+                        a.getDistanceMM() * a.getDistanceMM() +
+                        b.getDistanceMM() * b.getDistanceMM() -
+                        2 * a.getDistanceMM() * b.getDistanceMM() * cos(toRadians(gammaDegrees))
                 )
-                * 1000 // meters -> mm
         );
     }
-
 
     @Nullable
     private synchronized ObjectRecord findMatchingRecord(int subjectClassId, int contextClassId, int distance, int orientation) {

@@ -1,4 +1,4 @@
-package com.unigent.machines.homesurve1.processor.dynamics;
+package com.unigent.machines.homesurve1.processor.map;
 
 import com.unigent.agentbase.sdk.node.ConsoleCommandHandlerBase;
 import com.unigent.machines.homesurve1.InitializerProcessor;
@@ -6,9 +6,7 @@ import com.unigent.machines.homesurve1.InitializerProcessor;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Home Surveillance Robot, POC 1

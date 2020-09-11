@@ -253,11 +253,11 @@
       "discreteActions" : [ ],
       "description" : "",
       "logicTech" : "Java",
-      "processorClass" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder",
+      "processorClass" : "com.unigent.machines.homesurve1.processor.SceneBuilder",
       "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
-      "displayName" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder"
+      "displayName" : "com.unigent.machines.homesurve1.processor.SceneBuilder"
     },
-    "javaClassName" : "com.unigent.machines.homesurve1.processor.ObjectSceneBuilder",
+    "javaClassName" : "com.unigent.machines.homesurve1.processor.SceneBuilder",
     "inputs" : [ {
       "topicName" : "detected_objects_(depth_image)",
       "localBinding" : "detected_objects_json",
@@ -361,11 +361,11 @@
       "discreteActions" : [ ],
       "description" : "Eliminates pulsating, shivering and double objects from the scene",
       "logicTech" : "Java",
-      "processorClass" : "com.unigent.machines.homesurve1.processor.ObjectSceneFilter",
+      "processorClass" : "com.unigent.machines.homesurve1.processor.SceneFilter",
       "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
-      "displayName" : "com.unigent.machines.homesurve1.processor.ObjectSceneFilter"
+      "displayName" : "com.unigent.machines.homesurve1.processor.SceneFilter"
     },
-    "javaClassName" : "com.unigent.machines.homesurve1.processor.ObjectSceneFilter",
+    "javaClassName" : "com.unigent.machines.homesurve1.processor.SceneFilter",
     "inputs" : [ {
       "topicName" : "scene",
       "localBinding" : "scene_input",
@@ -450,11 +450,11 @@
       "discreteActions" : [ ],
       "description" : "",
       "logicTech" : "Java",
-      "processorClass" : "com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector",
+      "processorClass" : "com.unigent.machines.homesurve1.processor.map.MapDynamicsCollector",
       "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
-      "displayName" : "com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector"
+      "displayName" : "com.unigent.machines.homesurve1.processor.map.MapDynamicsCollector"
     },
-    "javaClassName" : "com.unigent.machines.homesurve1.processor.dynamics.MapDynamicsCollector",
+    "javaClassName" : "com.unigent.machines.homesurve1.processor.map.MapDynamicsCollector",
     "inputs" : [ {
       "topicName" : "recognized_scene",
       "localBinding" : "recognized_scene",
@@ -618,6 +618,14 @@
         "dataType" : "com.unigent.machines.homesurve1.state.ObjectScenePayload",
         "localName" : "scene",
         "receiveUpdates" : true
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.TensorPayload",
+        "localName" : "linear_motion",
+        "receiveUpdates" : false
+      }, {
+        "dataType" : "com.unigent.agentbase.library.core.state.sensor.XYZOrientationReading",
+        "localName" : "sensor/orientation/bno055",
+        "receiveUpdates" : false
       } ],
       "producedData" : [ {
         "dataType" : "com.unigent.machines.homesurve1.state.RecognizedObjectScenePayload",
@@ -638,6 +646,16 @@
       "localBinding" : "scene",
       "serializationMode" : "binary",
       "receiveUpdates" : true
+    }, {
+      "topicName" : "linear_motion",
+      "localBinding" : "linear_motion",
+      "serializationMode" : "binary",
+      "receiveUpdates" : false
+    }, {
+      "topicName" : "sensor/orientation/bno055",
+      "localBinding" : "sensor/orientation/bno055",
+      "serializationMode" : "binary",
+      "receiveUpdates" : false
     } ],
     "outputs" : [ {
       "topicName" : "recognized_scene",
@@ -708,6 +726,11 @@
     "inputs" : [ {
       "topicName" : "target_label",
       "localBinding" : "target_label",
+      "serializationMode" : "binary",
+      "receiveUpdates" : false
+    }, {
+      "topicName" : "filtered_scene",
+      "localBinding" : "recognized_scene",
       "serializationMode" : "binary",
       "receiveUpdates" : false
     } ],
