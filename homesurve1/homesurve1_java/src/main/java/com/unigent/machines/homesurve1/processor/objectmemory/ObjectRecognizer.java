@@ -97,7 +97,12 @@ public class ObjectRecognizer extends BodyMotionAwareProcessorBase {
             if(context.isEmpty()) {
                 continue;
             }
-            RecognizedSceneObject object = objectMemory.recognize(Objects.requireNonNull(subject, "Subject is null"), context);
+
+            Objects.requireNonNull(subject, "Subject is null");
+
+            RecognizedSceneObject expectation = recognizeByExpectation(subject, deltaAzimuth, linearMotionCm);
+            RecognizedSceneObject object = objectMemory.recognize(subject, context, expectation);
+
             if(object != null) {
                 recognizedSceneObjects.add(object);
             }

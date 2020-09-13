@@ -162,7 +162,7 @@
     }
   }, {
     "name" : "image_scaler",
-    "description" : "",
+    "description" : "Scales camera from to be consumable by object detector",
     "logicTech" : "Java",
     "enabled" : true,
     "sourceJarPath" : {
