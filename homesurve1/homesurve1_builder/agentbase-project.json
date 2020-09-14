@@ -189,11 +189,7 @@
       } ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "Scales provided image to the provided size",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize",
-      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
-      "displayName" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize"
+      "description" : "Scales provided image to the provided size"
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.ImageCropAndScaleToSize",
     "inputs" : [ {
@@ -251,11 +247,7 @@
       } ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.machines.homesurve1.processor.SceneBuilder",
-      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
-      "displayName" : "com.unigent.machines.homesurve1.processor.SceneBuilder"
+      "description" : ""
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.SceneBuilder",
     "inputs" : [ {
@@ -313,11 +305,7 @@
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter",
-      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/agentbase/library/agentbase-core-library/0.2.0-SNAPSHOT/agentbase-core-library-0.2.0-SNAPSHOT.jar",
-      "displayName" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter"
+      "description" : ""
     },
     "javaClassName" : "com.unigent.agentbase.library.core.processor.RGBDCameraFrameSplitter",
     "inputs" : [ {
@@ -359,11 +347,7 @@
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "Eliminates pulsating, shivering and double objects from the scene",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.machines.homesurve1.processor.SceneFilter",
-      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
-      "displayName" : "com.unigent.machines.homesurve1.processor.SceneFilter"
+      "description" : "Eliminates pulsating, shivering and double objects from the scene"
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.SceneFilter",
     "inputs" : [ {
@@ -401,11 +385,7 @@
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "Produces linear motion (travel and velocity) value (+/-) in meters",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.machines.homesurve1.processor.LinearMotionDetector",
-      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
-      "displayName" : "com.unigent.machines.homesurve1.processor.LinearMotionDetector"
+      "description" : "Produces linear motion (travel and velocity) value (+/-) in meters"
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.LinearMotionDetector",
     "inputs" : [ {
@@ -448,11 +428,7 @@
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.machines.homesurve1.processor.map.MapDynamicsCollector",
-      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
-      "displayName" : "com.unigent.machines.homesurve1.processor.map.MapDynamicsCollector"
+      "description" : ""
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.map.MapDynamicsCollector",
     "inputs" : [ {
@@ -504,11 +480,7 @@
         "uri" : "turn_right",
         "description" : "Turns right"
       } ],
-      "description" : "Provides a basic set of motor actions",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.machines.homesurve1.processor.actor.MotorActions",
-      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
-      "displayName" : "com.unigent.machines.homesurve1.processor.actor.MotorActions"
+      "description" : "Provides a basic set of motor actions"
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.actor.MotorActions",
     "inputs" : [ ],
@@ -558,11 +530,7 @@
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "Provides basic safety reflexes when proximity sensors trigger",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.machines.homesurve1.processor.actor.SafetyReflexes",
-      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
-      "displayName" : "com.unigent.machines.homesurve1.processor.actor.SafetyReflexes"
+      "description" : "Provides basic safety reflexes when proximity sensors trigger"
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.actor.SafetyReflexes",
     "inputs" : [ {
@@ -634,11 +602,7 @@
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.machines.homesurve1.processor.objectmemory.ObjectRecognizer",
-      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
-      "displayName" : "com.unigent.machines.homesurve1.processor.objectmemory.ObjectRecognizer"
+      "description" : ""
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.objectmemory.ObjectRecognizer",
     "inputs" : [ {
@@ -679,11 +643,7 @@
       "configDeclaration" : [ ],
       "continuousActionDimensions" : [ ],
       "discreteActions" : [ ],
-      "description" : "",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.machines.homesurve1.InitializerProcessor",
-      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
-      "displayName" : "com.unigent.machines.homesurve1.InitializerProcessor"
+      "description" : ""
     },
     "javaClassName" : "com.unigent.machines.homesurve1.InitializerProcessor",
     "inputs" : [ ],
@@ -716,11 +676,7 @@
         "uri" : "go",
         "description" : "Goes to an object labeled by payload in target label topic"
       } ],
-      "description" : "",
-      "logicTech" : "Java",
-      "processorClass" : "com.unigent.machines.homesurve1.processor.controller.UserTaskExecutor",
-      "sourceJarPath" : "/home/terran/projects/unigent/machines/homesurve1/homesurve1_builder/maven/com/unigent/machines/homesurve1/0.1-SNAPSHOT/homesurve1-0.1-SNAPSHOT.jar",
-      "displayName" : "com.unigent.machines.homesurve1.processor.controller.UserTaskExecutor"
+      "description" : ""
     },
     "javaClassName" : "com.unigent.machines.homesurve1.processor.controller.UserTaskExecutor",
     "inputs" : [ {

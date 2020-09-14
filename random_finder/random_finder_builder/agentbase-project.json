@@ -149,13 +149,13 @@
     "inputs" : [ {
       "topicName" : "scaled_camera_image",
       "localBinding" : "camera_frame",
-      "serializationMode" : "json",
+      "serializationMode" : "binary",
       "receiveUpdates" : true
     } ],
     "outputs" : [ {
       "topicName" : "detected_objects",
       "localBinding" : "detected_objects",
-      "serializationMode" : "binary"
+      "serializationMode" : "json"
     }, {
       "topicName" : "detected_objects_debug",
       "localBinding" : "detected_objects_debug",
@@ -419,6 +419,32 @@
       "serializationMode" : "binary",
       "receiveUpdates" : true
     } ],
+    "outputs" : [ ],
+    "config" : { }
+  }, {
+    "name" : "initializer",
+    "description" : "",
+    "logicTech" : "Java",
+    "enabled" : true,
+    "sourceJarPath" : {
+      "relative" : true,
+      "path" : "maven/com/unigent/machines/random_finder/0.1-SNAPSHOT/random_finder-0.1-SNAPSHOT.jar"
+    },
+    "targetNodeId" : "15f07fb0-a7c5-445c-8bc9-5328e75249a9",
+    "metadata" : {
+      "consumedData" : [ ],
+      "producedData" : [ ],
+      "configDeclaration" : [ ],
+      "continuousActionDimensions" : [ ],
+      "discreteActions" : [ ],
+      "description" : "",
+      "logicTech" : "Java",
+      "processorClass" : "com.unigent.machines.random_finder.InitializerProcessor",
+      "sourceJarPath" : "/home/terran/projects/unigent/machines/random_finder/random_finder_builder/maven/com/unigent/machines/random_finder/0.1-SNAPSHOT/random_finder-0.1-SNAPSHOT.jar",
+      "displayName" : "com.unigent.machines.random_finder.InitializerProcessor"
+    },
+    "javaClassName" : "com.unigent.machines.random_finder.InitializerProcessor",
+    "inputs" : [ ],
     "outputs" : [ ],
     "config" : { }
   } ],
