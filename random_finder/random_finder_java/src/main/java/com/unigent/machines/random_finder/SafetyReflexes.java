@@ -2,10 +2,12 @@ package com.unigent.machines.random_finder;
 
 import com.unigent.agentbase.library.core.state.sensor.BinaryValueReading;
 import com.unigent.agentbase.library.core.state.sensor.DistanceReading;
+import com.unigent.agentbase.sdk.action.TaskRequest;
 import com.unigent.agentbase.sdk.controller.ActuatorCommand;
 import com.unigent.agentbase.sdk.processing.ProcessorBase;
 import com.unigent.agentbase.sdk.processing.metadata.AgentBaseProcessor;
 import com.unigent.agentbase.sdk.processing.metadata.ConsumedDataFlow;
+import com.unigent.agentbase.sdk.rl.DiscreteActionImpl;
 import com.unigent.agentbase.sdk.state.StateUpdate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,7 +38,7 @@ import java.util.Objects;
                 @ConsumedDataFlow(localName = "sonar_right", dataType = DistanceReading.class)
         }
 )
-public class SafetyReflexes extends ProcessorBase {
+public class SafetyReflexes extends ProcessorBase implements Constants {
 
     private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
     private static final String CONTROLLER_URI = "mega_2560";
@@ -74,7 +76,21 @@ public class SafetyReflexes extends ProcessorBase {
     }
 
     private void stopMotors() {
+        log.info("Stopping motors!");
+
+        // Stop right away!!
         nodeServices.localHardwareControllersByUri.get(CONTROLLER_URI).actuateUrgently(STOP_MOTORS);
+
+        // Move back (is there is nothing behind)
+        DistanceReading backSonarReading = nodeServices.stateBus.ensureTopic("sensor/distance/sonar_back").getMostRecentDataPayload();
+        BinaryValueReading backProxReading = nodeServices.stateBus.ensureTopic("sensor/value/binary/prox_back").getMostRecentDataPayload();
+
+        boolean spaceInBack = backSonarReading == null || !backSonarReading.isValid() || backSonarReading.getDistanceMeters() > 0.5;
+        boolean touchInBack = backProxReading != null && backProxReading.isValue();
+        if(spaceInBack && !touchInBack) {
+            log.info("Stepping backward");
+            nodeServices.taskManager.execute(AS_MOTOR, new DiscreteActionImpl(MotorActions.ACTION_STEP_BACKWARD), TaskRequest.newTask(TaskRequest.MAX_URGENCY, 3000));
+        }
     }
 
     @Override

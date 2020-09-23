@@ -20,7 +20,13 @@ import java.util.concurrent.Executors;
  **/
 public class UserTaskConsoleHandler extends ConsoleCommandHandlerBase {
 
-    private final ExecutorService taskRunner = Executors.newCachedThreadPool();
+    private static final String DO = "do";
+    private static final String SHOW = "show";
+    private static final String CANCEL = "cancel";
+
+    private ExecutorService taskRunner;
+
+    private String currentTaskId;
 
     @Override
     public String help() {
@@ -29,32 +35,79 @@ public class UserTaskConsoleHandler extends ConsoleCommandHandlerBase {
 
     @Override
     public List<String> getFirstTokens() {
-        return Collections.singletonList("go");
+        return Collections.singletonList(DO);
     }
 
     @Override
     public boolean handle(List<String> tokens) throws Exception {
+
+        NodeServices nodeServices = console.getNodeServices();
         if(tokens.size() < 2) {
-            console.inform("Need more arguments: go <label>");
+            console.inform("Need more arguments: " + DO + " " + SHOW + "/" + CANCEL);
             return true;
         }
 
-        String label = tokens.get(1);
-        NodeServices nodeServices = console.getNodeServices();
+        switch(tokens.get(1)) {
+            case SHOW:
 
-        // 1. Put the label onto the target label topic
-        nodeServices.stateBus.publish(UserTaskExecutor.TARGET_LABEL, new StateUpdate(new StringPayload(label), StateUpdate.Origin.Manager));
+                if(currentTaskId != null) {
+                    console.inform("Sorry, already busy running task " + currentTaskId);
+                    return true;
+                }
 
-        // 2. Start the "go" action in a separate thread to free the console
-        this.taskRunner.submit(()->{
-            ActionOfferState offerState = nodeServices.taskManager.execute(
-                    UserTaskExecutor.ACTION_SPACE,
-                    new DiscreteActionImpl(UserTaskExecutor.ACTION_SHOW_OBJECT),
-                    TaskRequest.singleShotTask()
-            );
-            console.inform("Completed. Status: " + offerState);
-        });
+                if(tokens.size() < 3) {
+                    console.inform("Need more arguments: " + DO + " " + SHOW + " <label>");
+                    return true;
+                }
 
+                String label = tokens.get(2);
+
+                // 1. Put the label onto the target label topic
+                nodeServices.stateBus.publish(UserTaskExecutor.TARGET_LABEL, new StateUpdate(new StringPayload(label), StateUpdate.Origin.Manager));
+
+                // 2. Start the "go" action in a separate thread to free the console
+                this.taskRunner.submit(()->{
+                    TaskRequest taskRequest = TaskRequest.newTask();
+                    this.currentTaskId = taskRequest.getTaskId();
+                    console.inform("Starting task " + currentTaskId);
+                    ActionOfferState offerState = nodeServices.taskManager.execute(
+                            UserTaskExecutor.ACTION_SPACE,
+                            new DiscreteActionImpl(UserTaskExecutor.ACTION_SHOW_OBJECT),
+                            taskRequest
+                    );
+                    console.inform(SHOW + " completed. Status: " + offerState);
+                });
+                break;
+
+            case CANCEL:
+                if(currentTaskId == null) {
+                    console.inform("I'm not running any tasks");
+                    return true;
+                }
+
+                console.inform("Cancelling task " + currentTaskId);
+                boolean cancelled = nodeServices.taskManager.cancelTask(currentTaskId);
+                console.inform("Cancel success: " + cancelled);
+                this.currentTaskId = null;
+                break;
+
+            default:
+                return false;
+        }
         return true;
+
+    }
+
+    @Override
+    public void initiate() {
+        super.initiate();
+        this.taskRunner = Executors.newCachedThreadPool();
+    }
+
+    @Override
+    public void shutdown() {
+        this.taskRunner.shutdownNow();
+        this.taskRunner = null;
+        super.shutdown();
     }
 }

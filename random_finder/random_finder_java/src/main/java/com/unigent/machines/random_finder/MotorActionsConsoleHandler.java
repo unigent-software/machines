@@ -21,6 +21,8 @@ public class MotorActionsConsoleHandler extends ConsoleCommandHandlerBase {
 
     private static final String ACTIONS_SPACE_MOTOR = "motor";
 
+    private static final long TASK_TIMEOUT_MILLIS = 3000;
+
     private static final String CMD_STEP_FORWARD = "step_forward";
     private static final String CMD_STEP_BACKWARD = "step_backward";
     private static final String CMD_TURN_LEFT = "turn_left";
@@ -47,23 +49,23 @@ public class MotorActionsConsoleHandler extends ConsoleCommandHandlerBase {
         }
 
         TaskManager taskManager = console.getNodeServices().taskManager;
-
+        TaskRequest taskRequest = TaskRequest.newTask(TaskRequest.MEDIUM_URGENCY, TASK_TIMEOUT_MILLIS);
         switch (tokens.get(1)) {
             case CMD_STEP_FORWARD:
             case "sf":
-                taskManager.execute(ACTIONS_SPACE_MOTOR, new DiscreteActionImpl(CMD_STEP_FORWARD), TaskRequest.singleShotTask());
+                taskManager.execute(ACTIONS_SPACE_MOTOR, new DiscreteActionImpl(CMD_STEP_FORWARD), taskRequest);
                 return true;
             case CMD_STEP_BACKWARD:
             case "sb":
-                taskManager.execute(ACTIONS_SPACE_MOTOR, new DiscreteActionImpl(CMD_STEP_BACKWARD), TaskRequest.singleShotTask());
+                taskManager.execute(ACTIONS_SPACE_MOTOR, new DiscreteActionImpl(CMD_STEP_BACKWARD), taskRequest);
                 return true;
             case CMD_TURN_LEFT:
             case "tl":
-                taskManager.execute(ACTIONS_SPACE_MOTOR, new DiscreteActionImpl(CMD_TURN_LEFT), TaskRequest.singleShotTask());
+                taskManager.execute(ACTIONS_SPACE_MOTOR, new DiscreteActionImpl(CMD_TURN_LEFT), taskRequest);
                 return true;
             case CMD_TURN_RIGHT:
             case "tr":
-                taskManager.execute(ACTIONS_SPACE_MOTOR, new DiscreteActionImpl(CMD_TURN_RIGHT), TaskRequest.singleShotTask());
+                taskManager.execute(ACTIONS_SPACE_MOTOR, new DiscreteActionImpl(CMD_TURN_RIGHT), taskRequest);
                 return true;
         }
 

@@ -105,7 +105,7 @@ public class UserTaskExecutor extends ProcessorBase {
 
                 String label = ((StringPayload) targetLabelState.getPayload()).getValue();
                 ok("will start looking for " + label);
-                return new ShowObjectActionExecutor(this.targetLabel).showObject();
+                return new ShowObjectActionExecutor(this.targetLabel, taskId).showObject();
 
             default:
                 sorry("I don't know how to " + action.getUri());
@@ -125,14 +125,20 @@ public class UserTaskExecutor extends ProcessorBase {
 
         private static final long TIMEOUT_MILLIS = 10 * 60 * 1000; // 10 min
 
-        private final TaskRequest taskRequest = TaskRequest.multiShotTask(TaskRequest.MEDIUM_URGENCY);
+        private final TaskRequest taskRequest;
         private final String objectLabel;
+        private boolean ran = false;
 
-        public ShowObjectActionExecutor(String objectLabel) {
+        public ShowObjectActionExecutor(String objectLabel, String taskId) {
             this.objectLabel = objectLabel;
+            this.taskRequest = TaskRequest.continueTask(taskId);
         }
 
-        public boolean showObject() {
+        public synchronized boolean showObject() {
+
+            checkState(!ran, "Already ran");
+            ran = true;
+
             long searchStartedAt = System.currentTimeMillis();
             boolean done = false;
             while(!done) {
@@ -145,9 +151,20 @@ public class UserTaskExecutor extends ProcessorBase {
                     sorry("Can't find");
                     return false;
                 }
+
+                ok("Found a " + targetLabel + "! Moving closer...");
                 done = go();
             }
-            ok("Done!");
+            ok("Here it is!");
+
+            // "celebrate"
+            for(int i=0; i<3; i++) {
+                stepBackward();
+                sleep(400);
+                stepForward();
+            }
+            ok("DONE");
+
             return true;
         }
 
@@ -156,20 +173,10 @@ public class UserTaskExecutor extends ProcessorBase {
             while(!isFound()) {
 
                 // A) Turn around
-                checkState(currentAzimuth >=0, "Azimuth is not available");
-                int azimuth = currentAzimuth;
-                int turnedDegrees = 0;
-                while(turnedDegrees < 360) {
-                    if(isFound()) {
-                        break;
-                    }
-                    if(!turnRight()) {
-                        sorry("Can't turn!");
-                        sleep(1000);
-                    }
-                    sleep(400);
-                    turnedDegrees += Geometry.diffAzimuthDegrees(azimuth, currentAzimuth);
-                    azimuth = currentAzimuth;
+                turnAround();
+
+                if(isFound()) {
+                    break;
                 }
 
                 // B) Wander
@@ -184,8 +191,26 @@ public class UserTaskExecutor extends ProcessorBase {
             return true;
         }
 
+        private void turnAround() {
+            checkState(currentAzimuth >=0, "Azimuth is not available");
+            int azimuth = currentAzimuth;
+            int turnedDegrees = 0;
+            while(turnedDegrees < 360) {
+                if(isFound()) {
+                    return;
+                }
+                if(!turnRight()) {
+                    sorry("Can't turn!");
+                    sleep(3000);
+                }
+                sleep(1200);
+                turnedDegrees += Geometry.diffAzimuthDegrees(azimuth, currentAzimuth);
+                azimuth = currentAzimuth;
+            }
+        }
+
         private boolean isFound() {
-            return currentScene.getObjects().stream().anyMatch(sceneObject -> sceneObject.getLabel().equalsIgnoreCase(this.objectLabel));
+            return currentScene != null && currentScene.getObjects().stream().anyMatch(sceneObject -> sceneObject.getLabel().equalsIgnoreCase(this.objectLabel));
         }
 
         private boolean turnRight() {
@@ -196,23 +221,40 @@ public class UserTaskExecutor extends ProcessorBase {
             return nodeServices.taskManager.execute("motor", new DiscreteActionImpl("step_forward"), taskRequest) == ActionOfferState.Executed;
         }
 
-        private boolean wander() {
-            int azimuth = new Random().nextInt(360);
-            if(!turnToAzimuth(azimuth)) {
-                return false;
-            }
+        private boolean stepBackward() {
+            return nodeServices.taskManager.execute("motor", new DiscreteActionImpl("step_backward"), taskRequest) == ActionOfferState.Executed;
+        }
 
-            for(int i=0; i<10; i++) {
+        private boolean wander() {
+            for(int attempt = 0; attempt<10; attempt++) {
+                int azimuth = new Random().nextInt(360);
+                ok("Chose direction " + azimuth + " on attempt " + attempt + " to wander to");
+                if(!turnToAzimuth(azimuth)) {
+                    continue;
+                }
+
+                if(leap()) {
+                    return true;
+                }
+
+                // re-plan
+            }
+            return false;
+        }
+
+        private boolean leap() {
+            for(int i=0; i<6; i++) {
                 if(!stepForward()) {
+                    ok("Oops!");
+                    stepBackward();
                     return false;
                 }
             }
-
             return true;
         }
 
         private boolean go() {
-            while(currentSonarCm > 50) {
+            while(currentSonarCm > 40) {
                 // Make sure we still see the object
                 Optional<SceneObject> targetObject = currentScene.getObjects()
                         .stream()
@@ -253,7 +295,10 @@ public class UserTaskExecutor extends ProcessorBase {
 
                 ok("Azimuth diff: " + Math.round(diff));
 
-                String nudgeAction = diff < 0 ? MotorActions.ACTION_NUDGE_LEFT : MotorActions.ACTION_NUDGE_RIGHT;
+                String nudgeAction = diff < 0
+                        ? (abs(diff) > 20 ? MotorActions.ACTION_TURN_LEFT : MotorActions.ACTION_NUDGE_LEFT)
+                        : (abs(diff) > 20 ? MotorActions.ACTION_TURN_RIGHT : MotorActions.ACTION_NUDGE_RIGHT)
+                ;
                 if(nodeServices.taskManager.execute("motor", new DiscreteActionImpl(nudgeAction), taskRequest) != ActionOfferState.Executed) {
                     sorry("Unable to " + nudgeAction);
                     return false;

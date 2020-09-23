@@ -34,7 +34,7 @@ import java.util.Map;
         },
         description = "Provides a basic set of motor actions"
 )
-public class MotorActions extends ProcessorBase {
+public class MotorActions extends ProcessorBase implements Constants {
 
     public static final String ACTION_STOP = "stop";
     public static final String ACTION_STEP_FORWARD = "step_forward";
@@ -44,10 +44,9 @@ public class MotorActions extends ProcessorBase {
     public static final String ACTION_NUDGE_LEFT = "nudge_left";
     public static final String ACTION_NUDGE_RIGHT = "nudge_right";
 
-    private static final String ACTUATOR = "actuator";
     private static final ContinuousAction STOP = new ContinuousActionImpl(0.0, 0.0);
     private static final long STEP_TIME = 200;
-    private static final long NUDGE_TIME = 100;
+    private static final long NUDGE_TIME = 150;
 
     public MotorActions(String name) {
         super(name);
@@ -61,53 +60,46 @@ public class MotorActions extends ProcessorBase {
 
     @Override
     public boolean executeAction(@Nonnull String actionSpaceUri, @Nonnull DiscreteAction discreteAction, @Nonnull String taskId) {
-        TaskRequest task = new TaskRequest(taskId, TaskRequest.MEDIUM_URGENCY, false);
+        TaskRequest task = TaskRequest.continueTask(taskId);
         switch(discreteAction.getUri()) {
             case ACTION_STOP:
-                task.endOfTask();
-                this.nodeServices.taskManager.execute(ACTUATOR, STOP, task);
+                this.nodeServices.taskManager.execute(AS_ACTUATOR, STOP, task);
                 break;
 
             case ACTION_STEP_FORWARD:
-                this.nodeServices.taskManager.execute(ACTUATOR, new ContinuousActionImpl(1.0, 1.0), task);
-                Threads.sleep(STEP_TIME, true);
-                task.endOfTask();
-                this.nodeServices.taskManager.execute(ACTUATOR, STOP, task);
+                this.nodeServices.taskManager.execute(AS_ACTUATOR, new ContinuousActionImpl(1.0, 1.0), task);
+                Threads.sleep(STEP_TIME);
+                this.nodeServices.taskManager.execute(AS_ACTUATOR, STOP, task);
                 break;
 
             case ACTION_STEP_BACKWARD:
-                this.nodeServices.taskManager.execute(ACTUATOR, new ContinuousActionImpl(-1.0, -1.0), task);
-                Threads.sleep(STEP_TIME, true);
-                task.endOfTask();
-                this.nodeServices.taskManager.execute(ACTUATOR, STOP, task);
+                this.nodeServices.taskManager.execute(AS_ACTUATOR, new ContinuousActionImpl(-1.0, -1.0), task);
+                Threads.sleep(STEP_TIME);
+                this.nodeServices.taskManager.execute(AS_ACTUATOR, STOP, task);
                 break;
 
             case ACTION_TURN_LEFT:
-                this.nodeServices.taskManager.execute(ACTUATOR, new ContinuousActionImpl(-0.5, 1.0), task);
-                Threads.sleep(STEP_TIME, true);
-                task.endOfTask();
-                this.nodeServices.taskManager.execute(ACTUATOR, STOP, task);
+                this.nodeServices.taskManager.execute(AS_ACTUATOR, new ContinuousActionImpl(0, 1.0), task);
+                Threads.sleep(STEP_TIME);
+                this.nodeServices.taskManager.execute(AS_ACTUATOR, STOP, task);
                 break;
 
             case ACTION_TURN_RIGHT:
-                this.nodeServices.taskManager.execute(ACTUATOR, new ContinuousActionImpl(1.0, -0.5), task);
-                Threads.sleep(STEP_TIME, true);
-                task.endOfTask();
-                this.nodeServices.taskManager.execute(ACTUATOR, STOP, task);
+                this.nodeServices.taskManager.execute(AS_ACTUATOR, new ContinuousActionImpl(1.0, 0), task);
+                Threads.sleep(STEP_TIME);
+                this.nodeServices.taskManager.execute(AS_ACTUATOR, STOP, task);
                 break;
 
             case ACTION_NUDGE_LEFT:
-                this.nodeServices.taskManager.execute(ACTUATOR, new ContinuousActionImpl(-0.5, 0.5), task);
-                Threads.sleep(NUDGE_TIME, true);
-                task.endOfTask();
-                this.nodeServices.taskManager.execute(ACTUATOR, STOP, task);
+                this.nodeServices.taskManager.execute(AS_ACTUATOR, new ContinuousActionImpl(0, 0.7), task);
+                Threads.sleep(NUDGE_TIME);
+                this.nodeServices.taskManager.execute(AS_ACTUATOR, STOP, task);
                 break;
 
             case ACTION_NUDGE_RIGHT:
-                this.nodeServices.taskManager.execute(ACTUATOR, new ContinuousActionImpl(0.5, -0.5), task);
-                Threads.sleep(NUDGE_TIME, true);
-                task.endOfTask();
-                this.nodeServices.taskManager.execute(ACTUATOR, STOP, task);
+                this.nodeServices.taskManager.execute(AS_ACTUATOR, new ContinuousActionImpl(0.7, 0), task);
+                Threads.sleep(NUDGE_TIME);
+                this.nodeServices.taskManager.execute(AS_ACTUATOR, STOP, task);
                 break;
 
         }
