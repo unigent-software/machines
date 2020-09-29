@@ -3,7 +3,7 @@ import cv2 as cv
 import numpy as np
 import json
 import base64
-
+import time
 
 # Load YOLO
 net = cv.dnn.readNet("yolov3.weights","yolov3.cfg")
@@ -110,8 +110,11 @@ def on_situation(local_binding, origin, timestamp, correlation_id):
         if img is None:
             raise Exception("Unable to decode provided image")
 
+        start_time = time.time()
         detection_result = detect(img, timestamp)
-        print(detection_result)
+        end_time = time.time()
+
+        print('Got in {} ms: {}'.format(int((end_time - start_time) * 1000), detection_result))
 
         produced_data = [{
             "localBinding": "detected_objects",

@@ -1,5 +1,6 @@
 package com.unigent.machines.random_finder;
 
+import com.google.common.base.Joiner;
 import com.unigent.agentbase.library.core.state.StringPayload;
 import com.unigent.agentbase.sdk.action.ActionOfferState;
 import com.unigent.agentbase.sdk.action.TaskRequest;
@@ -60,7 +61,7 @@ public class UserTaskConsoleHandler extends ConsoleCommandHandlerBase {
                     return true;
                 }
 
-                String label = tokens.get(2);
+                String label = Joiner.on(' ').join(tokens.subList(2, tokens.size()));
 
                 // 1. Put the label onto the target label topic
                 nodeServices.stateBus.publish(UserTaskExecutor.TARGET_LABEL, new StateUpdate(new StringPayload(label), StateUpdate.Origin.Manager));

@@ -160,8 +160,9 @@ public class UserTaskExecutor extends ProcessorBase {
             // "celebrate"
             for(int i=0; i<3; i++) {
                 stepBackward();
-                sleep(400);
+                sleep(1000);
                 stepForward();
+                sleep(1000);
             }
             ok("DONE");
 
